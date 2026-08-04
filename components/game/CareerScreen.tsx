@@ -12,13 +12,19 @@ import { roleOptions, type RoleName } from "./data/roleOptions";
 import { GameStateDebug } from "./debug/GameStateDebug";
 import { RoleCard } from "./role-selection/RoleCard";
 import { RoleStyleChoice } from "./role-style/RoleStyleChoice";
+import { AlmostAYearTransition } from "./season1/AlmostAYearTransition";
 import { BandIdentityTransition } from "./season1/BandIdentityTransition";
 import { ChooseBandNameChoice } from "./season1/ChooseBandNameChoice";
 import { FirstCachet } from "./season1/FirstCachet";
+import { FirstInterviewScene } from "./season1/FirstInterviewScene";
+import { FirstInternalConflictChoice } from "./season1/FirstInternalConflictChoice";
+import { FirstInternalConflictSummary } from "./season1/FirstInternalConflictSummary";
 import { FirstMoneyChoice } from "./season1/FirstMoneyChoice";
 import { FirstMoneySummary } from "./season1/FirstMoneySummary";
 import { FirstRecitalChoice } from "./season1/FirstRecitalChoice";
 import { FirstRecitalSummary } from "./season1/FirstRecitalSummary";
+import { FirstReviewChoice } from "./season1/FirstReviewChoice";
+import { FirstReviewSummary } from "./season1/FirstReviewSummary";
 import { FirstSeriousRehearsalChoice } from "./season1/FirstSeriousRehearsalChoice";
 
 export function CareerScreen() {
@@ -28,6 +34,8 @@ export function CareerScreen() {
     advanceStep,
     chooseOption,
     applyEventOption,
+    applyInterviewAnswer,
+    applyTimePasses,
     buyShopItem,
     purchaseShopItem,
     receiveFirstCachet,
@@ -49,6 +57,15 @@ export function CareerScreen() {
   const [showFirstCachet, setShowFirstCachet] = useState(false);
   const [showFirstMoney, setShowFirstMoney] = useState(false);
   const [showFirstMoneySummary, setShowFirstMoneySummary] = useState(false);
+  const [showFirstReview, setShowFirstReview] = useState(false);
+  const [showFirstReviewSummary, setShowFirstReviewSummary] = useState(false);
+  const [showAlmostAYearTransition, setShowAlmostAYearTransition] =
+    useState(false);
+  const [showFirstInternalConflict, setShowFirstInternalConflict] =
+    useState(false);
+  const [showFirstInternalConflictSummary, setShowFirstInternalConflictSummary] =
+    useState(false);
+  const [showFirstInterview, setShowFirstInterview] = useState(false);
 
   const currentStep = gameEngine.getCurrentStep(gameState);
   const currentEvent = useMemo(
@@ -79,6 +96,7 @@ export function CareerScreen() {
     setShowFirstRecital(true);
     setShowFirstCachet(true);
     setShowFirstMoney(true);
+    setShowFirstReview(true);
   }
 
   function handleResetCareer() {
@@ -93,6 +111,12 @@ export function CareerScreen() {
     setShowFirstCachet(false);
     setShowFirstMoney(false);
     setShowFirstMoneySummary(false);
+    setShowFirstReview(false);
+    setShowFirstReviewSummary(false);
+    setShowAlmostAYearTransition(false);
+    setShowFirstInternalConflict(false);
+    setShowFirstInternalConflictSummary(false);
+    setShowFirstInterview(false);
     resetCareer();
   }
 
@@ -108,6 +132,12 @@ export function CareerScreen() {
     setShowFirstCachet(false);
     setShowFirstMoney(false);
     setShowFirstMoneySummary(false);
+    setShowFirstReview(false);
+    setShowFirstReviewSummary(false);
+    setShowAlmostAYearTransition(false);
+    setShowFirstInternalConflict(false);
+    setShowFirstInternalConflictSummary(false);
+    setShowFirstInterview(false);
     finishCareer();
   }
 
@@ -252,6 +282,57 @@ export function CareerScreen() {
           gameState={gameState}
           onContinue={() => {
             setShowFirstMoneySummary(false);
+          }}
+        />
+      ) : showFirstReview ? (
+        <FirstReviewChoice
+          gameState={gameState}
+          onChoose={(event, option) => {
+            applyEventOption(event, option);
+            setShowFirstReview(false);
+            setShowFirstReviewSummary(true);
+          }}
+        />
+      ) : showFirstReviewSummary ? (
+        <FirstReviewSummary
+          gameState={gameState}
+          onContinue={() => {
+            setShowFirstReviewSummary(false);
+            setShowAlmostAYearTransition(true);
+          }}
+        />
+      ) : showAlmostAYearTransition ? (
+        <AlmostAYearTransition
+          gameState={gameState}
+          onApplyTimePasses={applyTimePasses}
+          onContinue={() => {
+            setShowAlmostAYearTransition(false);
+            setShowFirstInternalConflict(true);
+          }}
+        />
+      ) : showFirstInternalConflict ? (
+        <FirstInternalConflictChoice
+          gameState={gameState}
+          onChoose={(event, option) => {
+            applyEventOption(event, option);
+            setShowFirstInternalConflict(false);
+            setShowFirstInternalConflictSummary(true);
+          }}
+        />
+      ) : showFirstInternalConflictSummary ? (
+        <FirstInternalConflictSummary
+          gameState={gameState}
+          onContinue={() => {
+            setShowFirstInternalConflictSummary(false);
+            setShowFirstInterview(true);
+          }}
+        />
+      ) : showFirstInterview ? (
+        <FirstInterviewScene
+          onAnswer={applyInterviewAnswer}
+          onComplete={() => {
+            setShowFirstInterview(false);
+            advanceStep();
           }}
         />
       ) : (

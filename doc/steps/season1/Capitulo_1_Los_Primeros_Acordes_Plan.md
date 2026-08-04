@@ -125,11 +125,11 @@ Su objetivo es mostrar que la decisión tuvo consecuencias en el mundo.
 
 **Tipo:** Pregunta
 
-El diario barrial publica una reseña del último recital.
+Una cuenta de Instagram dedicada a recomendar bandas emergentes publica una reseña del recital.
 
-No es una crítica importante.
+No tiene miles de seguidores.
 
-Pero es la primera vez que la banda aparece en un medio.
+Pero es la primera vez que alguien que no conoce a la banda opina públicamente sobre su música.
 
 ¿Cómo reaccionás?
 
@@ -153,9 +153,9 @@ No modifica estadísticas.
 
 ### Step 13 — Pasó casi un año
 
-**Tipo:** Información
+**Tipo:** Transición cinematográfica
 
-Transición temporal.
+Transición temporal, no consecuencia.
 
 La banda empieza a tocar con mayor frecuencia y el tiempo avanza.
 
@@ -165,19 +165,14 @@ La banda empieza a tocar con mayor frecuencia y el tiempo avanza.
 
 **Tipo:** Pregunta
 
-Un desacuerdo importante pone a prueba la relación entre los integrantes.
+text: "Siempre llega tarde"
 
-No necesariamente alguien quiere irse.
+description:
+"Al principio causaba gracia. Después empezó a molestar. Ahora cada ensayo arranca con la misma pregunta: "¿Esperamos un rato más o empezamos sin él?""
 
-Puede tratarse de:
+¿Que haces?
 
-- diferencias musicales;
-- compromiso;
-- dinero;
-- protagonismo;
-- forma de trabajar.
-
----
+inventar 15 posibles opciones de acuerdo a la filosofia de la web
 
 ### Step 15 — Las cosas ya no son iguales
 

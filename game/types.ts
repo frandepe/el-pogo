@@ -56,6 +56,17 @@ export type NumericGameStateKey = {
 
 export type Effect = Partial<Record<NumericGameStateKey, number>>;
 
+export type TimePassesIntensity = "quiet" | "active" | "intense";
+
+export type TimePasses = {
+  months: number;
+  intensity: TimePassesIntensity;
+};
+
+export type TimePassesResult = {
+  effects: Effect;
+};
+
 export type OptionRarity = "common" | "uncommon" | "special";
 
 export type ConditionOperator = ">=" | "<=" | ">" | "<" | "=";
@@ -107,9 +118,11 @@ export type PersonalityTrait =
   | "Humilde"
   | "Ambicioso"
   | "Impulsivo"
-  | "Diplomático"
-  | "Temerario"
-  | "Leal";
+  | "Leal"
+  | "Creativo"
+  | "Líder"
+  | "Pragmático"
+  | "Egocéntrico";
 
 export type ShopItem = {
   id: string;

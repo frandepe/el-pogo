@@ -4,6 +4,10 @@ import { createInitialGameState } from "./createInitialGameState";
 import { getEffectSignature } from "./effectSignature";
 import { initialEvents } from "./events/initialEvents";
 import {
+  applyInterviewAnswer as applyInterviewAnswerToState,
+  type InterviewDefinition,
+} from "./interviews";
+import {
   advanceStep as advanceFlowStep,
   careerFlow,
   getCurrentStep as getFlowCurrentStep,
@@ -18,8 +22,13 @@ import {
   initialShopItems,
 } from "./shop";
 import { getOptionRarityWeight } from "./optionRarity";
-import { applyPersonalitySignals } from "./personality";
+import {
+  applyPersonalitySignals,
+  getDominantPersonalitySignals,
+  recalculatePersonalityTraits,
+} from "./personality";
 import { selectWeightedWithoutReplacement } from "./selectWeightedWithoutReplacement";
+import { applyTimePasses as applyTimePassesToState } from "./timePasses";
 import type {
   EventOption,
   GameEvent,
@@ -27,6 +36,7 @@ import type {
   ShopItem,
   StepType,
   CareerResult,
+  TimePasses,
 } from "./types";
 import { validateConditions } from "./validateConditions";
 
@@ -51,6 +61,9 @@ export const gameEngine = {
   buyShopItem,
   purchaseShopItem,
   receiveFirstCachet,
+  applyTimePasses,
+  applyInterviewAnswer,
+  getDominantPersonalitySignals,
 };
 
 const VISIBLE_EVENT_OPTIONS_COUNT = 3;
@@ -97,6 +110,10 @@ export function applyOption(
     throw new Error(`Option is not available: ${option.id}`);
   }
 
+  if (event.stepType === "Interview" && Object.keys(option.effects).length > 0) {
+    throw new Error(`Interview option cannot modify stats: ${option.id}`);
+  }
+
   const effectedState = applyEffects(gameState, option.effects);
   const nextState = applyPersonalitySignals(
     option.bandName
@@ -123,7 +140,7 @@ export function applyOption(
 
 export function completeCareer(gameState: GameState): GameState {
   return {
-    ...gameState,
+    ...recalculatePersonalityTraits(gameState),
     currentStep: careerFlow.length - 1,
   };
 }
@@ -144,6 +161,22 @@ export function receiveFirstCachet(gameState: GameState): GameState {
   return applyEffects(gameState, {
     money: FIRST_CACHET_PERSONAL_SHARE,
   });
+}
+
+export function applyTimePasses(
+  gameState: GameState,
+  timePasses: TimePasses,
+): GameState {
+  return applyTimePassesToState(gameState, timePasses);
+}
+
+export function applyInterviewAnswer(
+  gameState: GameState,
+  interview: InterviewDefinition,
+  questionId: string,
+  optionId: string,
+): GameState {
+  return applyInterviewAnswerToState(gameState, interview, questionId, optionId);
 }
 
 export function getCurrentEvent(
@@ -174,7 +207,7 @@ export function getEventWithVisibleOptions<TEvent extends GameEvent>(
 
 export function getVisibleEventOptions<TOption extends EventOption>(
   gameState: GameState,
-  event: { options: readonly TOption[] },
+  event: { options: readonly TOption[]; stepType?: StepType },
 ): readonly TOption[] {
   const availableOptions = event.options.filter((option) =>
     validateConditions(gameState, option.conditions),
@@ -184,7 +217,9 @@ export function getVisibleEventOptions<TOption extends EventOption>(
     availableOptions,
     VISIBLE_EVENT_OPTIONS_COUNT,
     getOptionRarityWeight,
-    (option) => getEffectSignature(option.effects),
+    event.stepType === "Interview"
+      ? undefined
+      : (option) => getEffectSignature(option.effects),
   );
 }
 

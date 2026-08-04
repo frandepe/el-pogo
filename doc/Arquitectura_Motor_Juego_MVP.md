@@ -1,648 +1,435 @@
-# Arquitectura del motor de juego (MVP)
+# Arquitectura del motor de juego
 
-## Objetivo
+Este documento describe la arquitectura actual de El Pogo.
 
-Construir un juego narrativo estilo "modo carrera" donde toda la partida se ejecuta completamente en el cliente y únicamente al finalizar se envía un resumen de la carrera al backend.
+El Pogo es un juego narrativo de carrera musical construido en Next.js. La
+partida corre completa en el cliente: el estado vive en memoria, Zustand expone
+acciones de juego y el motor aplica reglas puras sobre `GameState`.
 
-El objetivo del MVP es validar que el juego sea divertido antes de invertir tiempo en autenticación, rankings y persistencia.
-
-Toda la filosofía narrativa, el tono del juego, la tienda y las reglas de escritura de eventos se documentan en `Filosofia_Narrativa_y_Shop.md`.
+El backend queda reservado para una fase posterior: guardar carreras finalizadas,
+rankings, estadisticas y consultas historicas.
 
 ---
 
-# Arquitectura general
+## 1. Principio central
+
+El juego esta basado en estado, no en arboles rigidos de decisiones.
+
+La unica fuente de verdad es:
+
+```ts
+GameState
+```
+
+La UI no decide consecuencias. La UI muestra una pantalla, recibe una accion del
+jugador y llama al store. El store delega en el motor. El motor devuelve un nuevo
+estado.
+
+Flujo mental:
 
 ```text
-Frontend (Next.js)
-│
-├── Motor del juego
-├── GameState
-├── Historial de decisiones
-├── Catálogo de eventos
-├── Flujo del juego
-├── Componentes de UI
-└── POST /api/careers (solo al finalizar)
-
-Backend (Fase 2)
-│
-├── Guarda la carrera
-├── Rankings
-├── Estadísticas
-└── Historial de partidas
-```
-
-Durante toda la partida:
-
-- No existen requests al backend.
-- No existe persistencia.
-- Todo el estado vive únicamente en memoria.
-- No se utiliza LocalStorage ni base de datos.
-
-Al finalizar:
-
-```http
-POST /api/careers
+Interaccion del jugador
+        |
+        v
+Zustand store
+        |
+        v
+gameEngine
+        |
+        v
+GameState actualizado
+        |
+        v
+UI renderizada segun estado
 ```
 
 ---
 
-# GameState
+## 2. GameState
 
-Existe un único objeto que representa absolutamente toda la carrera.
+`GameState` contiene la carrera completa:
 
 ```ts
-GameState {
-  artistName: "",
-  role: "",
+type GameState = {
+  artistName: string;
+  bandName: string;
+  role: string;
+  currentStep: number;
+  age: number;
 
-  currentStep: 0,
-  age: 18,
+  fame: number;
+  fans: number;
+  money: number;
+  talent: number;
+  creativity: number;
+  charisma: number;
+  reputation: number;
+  health: number;
 
-  fame: 10,
-  fans: 0,
-  money: 500, (pesos argentinos)
+  albums: number;
+  concerts: number;
+  awards: number;
+  grammys: number;
+  worldTours: number;
+  recordDeals: number;
+  bandBreakups: number;
 
-  talent: 40,
-  creativity: 50,
-  charisma: 35,
-  reputation: 20,
-  health: 100,
+  personalitySignals: Partial<Record<PersonalitySignal, number>>;
+  personalityTraits: readonly PersonalityTrait[];
 
-  albums: 0,
-  concerts: 0,
-  awards: 0,
-  grammys: 0,
-  worldTours: 0,
-  recordDeals: 0,
-  bandBreakups: 0,
-
-  history: []
-}
+  completedShopItemIds: readonly string[];
+  activeContractIds: readonly string[];
+  shopCooldowns: readonly ShopCooldown[];
+  history: readonly CareerHistoryEntry[];
+};
 ```
 
-El `GameState` es la única fuente de verdad del juego.
-
-Nunca existen múltiples estados con información duplicada.
-
-El motor nunca debe depender del estado interno de componentes de React.
-
-La UI únicamente representa el estado generado por el motor.
-
----
-
-# Rasgos de personalidad
-
-Además de las estadísticas, el jugador puede desarrollar **rasgos de personalidad**.
-
-Los rasgos no son valores numéricos.
-
-Representan la forma en que el jugador construyó la personalidad de su músico a través de sus decisiones.
-
-Ejemplos:
-
-- Rebelde
-- Perfeccionista
-- Humilde
-- Ambicioso
-- Impulsivo
-- Diplomático
-- Temerario
-- Leal
-
-Los rasgos nunca se eligen directamente.
-
-Se obtienen de manera orgánica a lo largo de la carrera.
-
-Por ejemplo, si el jugador responde de forma agresiva o desafiante de manera recurrente, puede desbloquear el rasgo **Rebelde**.
-
-Si constantemente prioriza a sus compañeros por encima de su propio beneficio, puede obtener el rasgo **Leal**.
-
-## Consecuencias
-
-Los rasgos modifican la narrativa del juego.
-
-Pueden:
-
-- desbloquear nuevas opciones de diálogo;
-- habilitar eventos exclusivos;
-- impedir determinadas decisiones;
-- modificar la reacción de otros personajes;
-- cambiar la forma en que evoluciona una situación.
-
-Los rasgos no reemplazan a las estadísticas.
-
-Mientras las estadísticas representan **qué tan bueno es el músico**, los rasgos representan **quién es como persona**.
-
-El objetivo es que dos jugadores con estadísticas similares puedan vivir carreras completamente distintas gracias a la personalidad que construyeron durante la partida.
-
----
-
-Yo dividiría el juego en dos fases.
-
-Fase 1 - Construcción del personaje
-
-Aproximadamente los primeros 5-10 eventos.
-
-No importa demasiado qué tan aleatorios sean.
-
-Lo importante es responder preguntas como:
-
-¿Qué clase de músico sos?
-¿Cómo tratás a tu banda?
-¿Cómo reaccionás ante la presión?
-¿Preferís el talento o el trabajo?
-¿Sos humilde o agrandado?
-¿Improvisás o planificás?
-
-Es como cuando conocés a alguien. Todavía no sabés qué le va a pasar en la vida, pero empezás a entender quién es.
-
-Fase 2 - La carrera responde a quién sos
-
-Recién ahí el motor empieza a decir:
-
-"Bueno... este jugador es guitarrista, creativo, bastante rebelde, tiene buen talento y ya ganó algo de reputación."
-
-Y desde ese momento empiezan a aparecer eventos acordes.
-
----
-
-# Filosofía del motor
-
-El juego **no** está basado en árboles de decisiones.
-
-Está basado en el estado actual del jugador.
-
-Dos jugadores pueden recorrer exactamente el mismo flujo y vivir carreras completamente diferentes debido a las decisiones que fueron tomando.
-
-El motor nunca conoce historias concretas.
-
-Únicamente conoce:
-
-- el GameState;
-- el flujo del juego;
-- el catálogo de eventos.
-
-Todo el contenido vive fuera del motor.
-
----
-
-# Flujo del juego
-
-El flujo es completamente declarativo.
-
-Ejemplo:
+El estado inicial vive en:
 
 ```text
-Crear artista
-↓
-Elegir rol
-↓
-UP
-↓
-Choice
-↓
-Info
-↓
-UP
-↓
-Choice
-↓
-Info
-↓
-Market
-↓
-Interview
-↓
-MiniGame
-↓
-Info
-↓
-UP
-↓
-Choice
-↓
-...
-↓
-Final
+game/createInitialGameState.ts
 ```
 
-Cada paso representa únicamente un tipo de pantalla.
-
-El motor sabe cuál es el siguiente paso.
-
-Nunca conoce qué historia contará esa pantalla.
+El motor nunca debe depender del estado interno de componentes React. Si algo
+afecta la carrera, debe terminar representado en `GameState`.
 
 ---
 
-# Tipos de pasos
+## 3. Capas principales
 
-## CreateArtist
+Las piezas principales son:
 
-Inicializa el GameState.
-
----
-
-## Upgrade
-
-Permite elegir una mejora para el personaje.
-
----
-
-## Choice
-
-Presenta una decisión narrativa.
+- `game/types.ts`: tipos centrales del dominio.
+- `game/gameEngine.ts`: API principal del motor.
+- `game/store.ts`: store de Zustand que conecta UI y motor.
+- `game/flow.ts`: flujo declarativo de steps genericos.
+- `game/applyEffects.ts`: aplica cambios numericos directos.
+- `game/timePasses.ts`: calcula crecimiento pasivo por paso del tiempo.
+- `game/personality.ts`: aplica signals y recalcula traits.
+- `game/interviews.ts`: reglas de entrevistas.
+- `game/shop.ts`: catalogo y reglas de tienda.
+- `components/game/CareerScreen.tsx`: orquesta la escena visible.
+- `components/game/season1/`: contenido especifico del Capitulo I.
 
 ---
 
-## Info
+## 4. Flujo de carrera
 
-Pantalla narrativa.
+El flujo base vive en:
 
-No requiere interacción.
+```text
+game/flow.ts
+```
 
----
+Actualmente:
 
-## Interview
+```ts
+[
+  "CreateArtist",
+  "Upgrade",
+  "Choice",
+  "Info",
+  "Shop",
+  "Final",
+]
+```
 
-Serie de preguntas.
+Ese flujo representa tipos generales de pantalla, no toda la puesta en escena
+del Capitulo I. Varias escenas especiales del capitulo se orquestan en
+`CareerScreen` con estado local de UI:
 
----
+- intro de capitulo;
+- eleccion de estilo por rol;
+- transiciones narrativas;
+- decisiones especificas de temporada;
+- consecuencias informativas;
+- entrevistas.
 
-## Market
-
-Presenta oportunidades disponibles según el estado actual del jugador.
-
----
-
-## Shop
-
-Permite realizar compras.
-
-Toda la lógica de la tienda se encuentra documentada en `Filosofia_Narrativa_y_Shop.md`.
-
----
-
-## MiniGame
-
-Eventos especiales con mecánicas propias.
-
-Ejemplos:
-
-- Festival.
-- Premios.
-- Concierto histórico.
+Esto es una solucion pragmatica del MVP: el motor mantiene el estado de carrera,
+mientras `CareerScreen` decide que componente visual aparece en cada momento del
+capitulo.
 
 ---
 
-# Sistema de efectos
+## 5. Tipos de pantalla
 
-El motor nunca modifica manualmente el GameState.
+### Choice
 
-Cada opción disponible dentro de un evento posee un conjunto de efectos (`effects`).
+Pantalla de decision narrativa.
+
+Cada opcion puede tener:
+
+- `effects`;
+- `personalitySignals`;
+- `conditions`;
+- `rarity`.
+
+Las decisiones importantes no deberian limitarse a subir stats. Deben expresar
+una postura narrativa y, cuando corresponda, construir personalidad.
+
+### Info
+
+Pantalla informativa tradicional. Muestra la consecuencia narrativa de una
+decision previa.
+
+No esta pensada para representar paso largo del tiempo.
+
+### CinematicTransition
+
+Transicion cinematografica. Se usa para comunicar que la historia avanzo o que
+paso tiempo.
+
+No es una consecuencia directa de una decision. Es un respiro narrativo y, desde
+el sistema `timePasses`, tambien es el lugar natural para aplicar crecimiento
+pasivo de carrera.
+
+### Interview
+
+Pantalla de entrevista.
+
+Las entrevistas no modifican atributos. No dan fama, dinero, talento, salud ni
+reputacion. Construyen personalidad de forma silenciosa mediante
+`personalitySignals`.
+
+Cada entrevista define 8 preguntas posibles; el motor de entrevista selecciona 3
+al azar. Cada pregunta tiene exactamente 4 respuestas y cada respuesta aporta una
+signal.
+
+### Shop
+
+La tienda permite compras de carrera, contratos y lujos.
+
+Las compras usan `effects` y pueden tener condiciones, cooldowns y estados de
+disponibilidad.
+
+---
+
+## 6. Effects
+
+`effects` representa consecuencias directas y numericas sobre `GameState`.
 
 Ejemplo:
 
 ```ts
-{
-  id: "practice",
-
-  text: "¿Qué hacés durante el ensayo?",
-
-  options: [
-    {
-      text: "Practicar durante ocho horas.",
-
-      effects: {
-        talent: +4,
-        creativity: -1,
-        health: -1
-      }
-    },
-
-    {
-      text: "Componer un riff nuevo.",
-
-      effects: {
-        creativity: +3,
-        talent: +1
-      }
-    }
-  ]
+effects: {
+  talent: 2,
+  health: -1
 }
 ```
 
-El motor únicamente recibe la opción elegida y aplica sus efectos sobre el `GameState`.
+Usar `effects` para:
 
-Todos los sistemas del juego utilizan exactamente este mecanismo.
+- decisiones puntuales;
+- compras;
+- recompensas concretas;
+- consecuencias inmediatas.
 
-Da igual si se trata de:
+No usar `effects` para:
 
-- una compra;
-- una entrevista;
-- una pelea con la banda;
-- un concierto;
-- un exceso;
-- una decisión narrativa.
+- entrevistas;
+- crecimiento de fondo por meses o anos;
+- personalidad consolidada.
 
-Todo termina convirtiéndose en efectos sobre el estado del jugador.
+El helper vive en:
 
-Los efectos no se limitan únicamente a modificar estadísticas.
+```text
+game/applyEffects.ts
+```
 
-También pueden:
+`applyEffects` es una funcion pura: recibe un estado, aplica deltas numericos y
+devuelve un nuevo estado.
 
-- agregar objetos al inventario;
-- otorgar logros;
-- desbloquear nuevos eventos;
-- bloquear eventos futuros;
-- modificar probabilidades;
-- registrar información en el historial;
-- cambiar cualquier otro dato del GameState.
+---
 
-## Decisiones importantes
+## 7. Paso del tiempo
 
-Toda decisión importante debe tener consecuencias mecánicas y narrativas.
-
-Una opción no debería existir solo como texto cosmético. Si el jugador está definiendo una postura relevante para su carrera, la opción debe:
-
-- modificar al menos un atributo del `GameState` mediante `effects`;
-- registrar señales de personalidad cuando corresponda;
-- expresar una diferencia narrativa clara frente a las otras opciones.
-
-No todas las decisiones deben ser una mejora gratuita. Algunas opciones pueden aumentar un atributo y reducir otro.
+`timePasses` es el mecanismo principal de crecimiento pasivo.
 
 Ejemplo:
 
 ```ts
-{
-  text: "Aceptar el cambio de sonido",
-  effects: {
-    fame: 4,
-    reputation: -2
-  },
-  personalitySignals: ["ambition"]
+timePasses: {
+  months: 11,
+  intensity: "active"
 }
 ```
 
-La regla general es que las respuestas válidas construyan músicos distintos, no solo resultados correctos o incorrectos.
+El contenido solo declara cuanto tiempo paso y cuan intenso fue el periodo. El
+motor calcula automaticamente:
 
-# Rareza de las opciones
+- recitales;
+- fans;
+- fama;
+- dinero;
+- talento;
+- creatividad;
+- salud si hubo desgaste o recuperacion;
+- edad si pasan anos completos.
 
-No todas las opciones de un evento deben aparecer con la misma frecuencia.
+Esto evita que el juego se sienta arcade.
 
-Cada opción podrá pertenecer a uno de estos tres niveles:
+En vez de:
 
-## Común
+```text
+Primer recital: +15 fans
+```
 
-Es el comportamiento por defecto.
+El juego busca:
 
-- Son las opciones que aparecen con mayor frecuencia.
-- No requieren ninguna diferenciación visual.
-- Constituyen la mayoría del contenido del juego.
+```text
+Pasaron once meses.
+La banda siguio tocando.
 
-## Poco común
+Fans +183
+Fama +1
+Dinero +320
+Recitales +12
+```
 
-Representan oportunidades que aparecen ocasionalmente.
+La regla de contenido es: cada cierto periodo largo de la historia, normalmente
+meses o anos representados por una transicion cinematografica, el juego debe
+aplicar `timePasses` para consolidar el crecimiento de fondo.
 
-No necesariamente son mejores que una opción común, pero suelen ofrecer un impacto ligeramente mayor o una situación más interesante.
+APIs:
 
-En la UI deberán diferenciarse de forma sutil mediante:
+```ts
+calculateTimePassesResult(gameState, timePasses)
+applyTimePasses(gameState, timePasses)
+```
 
-- un pequeño detalle visual en tonos dorados;
-- un badge con el texto **"Poco común"**.
+Documentacion completa:
 
-El resto de la card debe mantenerse igual para no romper la estética general del juego.
-
-## Especial
-
-Representan oportunidades extraordinarias dentro de una carrera.
-
-No son simplemente una recompensa más grande.
-
-Su objetivo es introducir situaciones poco frecuentes que puedan cambiar el rumbo de la historia.
-
-Una opción especial puede ofrecer:
-
-- efectos superiores a los habituales;
-- eventos exclusivos;
-- objetos únicos;
-- contactos importantes;
-- decisiones con gran impacto narrativo;
-- oportunidades difíciles de volver a encontrar.
-
-También puede implicar riesgos importantes.
-
-Una opción especial no debe ser automáticamente la mejor opción. Debe ser la más trascendente.
-
-Visualmente deberá diferenciarse mediante:
-
-- borde con tonos dorados;
-- brillo muy sutil;
-- badge dorado con el texto **"Especial"**.
-
-La estética debe seguir siendo elegante y coherente con el resto del juego. No debe sentirse como un sistema de loot de un RPG.
-
-## Filosofía
-
-El objetivo no es recompensar al jugador con más estadísticas.
-
-El objetivo es generar momentos memorables.
-
-Cuando aparezca una opción **Especial**, el jugador debe sentir que acaba de recibir una oportunidad que probablemente no vuelva a aparecer en esa carrera.
+```text
+doc/time-passes-system.md
+```
 
 ---
 
-# Cómo evoluciona la historia
+## 8. Personalidad
 
-El flujo del juego siempre es el mismo.
+La personalidad tiene dos capas:
 
-Lo que cambia es el contenido disponible para el jugador.
+- `personalitySignals`: contadores internos invisibles.
+- `personalityTraits`: rasgos visibles consolidados.
 
-Ejemplo:
-
-```
-fame = 90
-```
-
-↓
-
-Festival internacional.
-
----
-
-```
-fame = 40
-```
-
-↓
-
-Teatro.
-
----
-
-```
-fame = 10
-```
-
-↓
-
-Bar.
-
-El recorrido es idéntico.
-
-La narrativa cambia porque cambia el GameState.
-
----
-
-# Catálogo de eventos
-
-Los eventos son únicamente datos.
-
-Cada evento define:
-
-- cuándo puede aparecer;
-- qué opciones presenta;
-- qué efectos produce cada opción.
+Las decisiones y entrevistas suman signals. Los traits se recalculan en hitos
+narrativos o al finalizar la carrera.
 
 Ejemplo:
 
 ```ts
-{
-  id: "festival",
-
-  conditions: {
-    fame: ">=80",
-    age: ">=22"
-  },
-
-  options: [
-    ...
-  ]
+personalitySignals: {
+  humble: 6,
+  leader: 2,
+  authentic: 4
 }
 ```
 
-El motor únicamente filtra los eventos válidos según el GameState.
-
----
-
-# Motor de selección
+Mas adelante, al recalcular:
 
 ```ts
-const candidates = events.filter((event) => event.matches(gameState));
-
-const nextEvent = weightedRandom(candidates);
+personalityTraits: ["Humilde"]
 ```
 
-No existen árboles gigantes de decisiones.
+Las reglas viven en:
 
-No existen cientos de `if` anidados.
+```text
+game/personalityTraitRules.ts
+```
 
-Agregar nuevos eventos nunca debe requerir modificar esta lógica.
+La documentacion completa vive en:
+
+```text
+doc/personality-system.md
+```
 
 ---
 
-# Historial de la carrera
+## 9. Entrevistas
 
-Durante toda la partida el motor registra las decisiones tomadas por el jugador.
+Las entrevistas existen para revelar quien es el musico, no para optimizar
+estadisticas.
 
-Ejemplo:
+Reglas:
+
+- cada entrevista tiene 8 preguntas posibles;
+- se muestran 3 preguntas por partida;
+- cada pregunta tiene 4 opciones;
+- cada opcion aporta exactamente una `personalitySignal`;
+- no se repite la misma signal dentro de una misma pregunta;
+- se pueden repetir signals entre preguntas distintas si es natural;
+- no se muestran badges, signals ni consecuencias inmediatas.
+
+Las preguntas deben nacer de algo que paso en la carrera. Una entrevista nunca
+pregunta directamente por la personalidad del jugador; la personalidad se deduce
+de la respuesta.
+
+---
+
+## 10. Historial
+
+El historial registra decisiones y respuestas importantes:
 
 ```ts
 history: [
   {
-    eventId: "journalist-cerati",
-    optionId: "humilde",
-  },
-  {
-    eventId: "record-deal",
-    optionId: "rechazar",
-  },
-];
+    eventId: "first-review",
+    optionId: "answer-with-humility",
+    personalitySignals: ["humble"]
+  }
+]
 ```
 
-El historial no representa el estado del jugador.
+El historial no reconstruye el estado. Sirve para:
 
-Su objetivo es:
-
-- construir el resumen final;
-- mostrar la historia de la carrera;
-- enviar información al backend;
-- obtener estadísticas en futuras versiones.
-
-El GameState nunca se reconstruye a partir del historial.
-
-Siempre representa el estado actual del jugador.
+- resumen final;
+- narrativa futura;
+- estadisticas posteriores;
+- condiciones basadas en decisiones previas.
 
 ---
 
-# Responsabilidades del motor
+## 11. Seleccion de eventos y opciones
 
-El motor es responsable de:
+Los eventos son datos. El motor filtra por condiciones y selecciona contenido
+disponible segun `GameState`.
 
-- mantener el GameState;
-- avanzar el flujo;
-- validar condiciones;
-- seleccionar eventos;
-- aplicar efectos;
-- registrar el historial;
-- finalizar la carrera.
+Las opciones visibles se seleccionan sin reemplazo. En decisiones normales se
+evita mostrar opciones con la misma firma de `effects` para dar variedad
+mecanica. En entrevistas esa deduplicacion no aplica porque las respuestas no
+usan `effects`.
 
-El motor **no** es responsable de:
+Las condiciones soportan:
 
-- renderizar componentes;
-- decidir textos;
-- conocer historias concretas;
-- comunicarse continuamente con el backend.
+- comparadores numericos sobre stats;
+- presencia o ausencia de personality traits.
 
 ---
 
-# Finalización
+## 12. Finalizacion
 
-Cuando termina la carrera:
+Al finalizar la carrera:
 
-1. Se calcula el resultado final.
-2. Se obtiene el puntaje.
-3. Se genera el resumen de la carrera.
-4. Se envía una única request al backend.
+1. Se recalculan `personalityTraits`.
+2. Se calcula el puntaje.
+3. Se determina el ending.
+4. Se genera `CareerResult`.
 
-Ejemplo:
-
-```http
-POST /api/careers
-```
-
-Payload:
-
-```json
-{
-  "artistName": "...",
-  "score": 18340,
-  "ending": "Rock Legend",
-  "stats": {
-    "fame": 98,
-    "fans": 24500000,
-    "albums": 14,
-    "grammys": 8,
-    "money": 185000000
-  },
-  "history": [...]
-}
-```
-
-Durante toda la partida no existe persistencia.
+Hoy el resultado se calcula localmente. La persistencia en backend queda para una
+fase posterior.
 
 ---
 
-# Principios de diseño
+## 13. Principios actuales
 
-- El GameState es la única fuente de verdad.
-- Todo cambio sobre el GameState se realiza mediante `effects`.
-- El motor nunca conoce historias concretas.
-- Los eventos son datos.
-- El flujo es declarativo.
-- El estado actual determina qué eventos pueden aparecer.
-- El backend participa únicamente al finalizar la carrera.
-- Agregar nuevos eventos nunca debe requerir modificar el motor.
-- Agregar contenido consiste únicamente en crear nuevos datos.
-- El juego debe poder ejecutarse completamente sin conexión a un backend.
-- El motor debe poder ejecutarse independientemente de React.
-- La UI únicamente consume el estado generado por el motor.
+- `GameState` es la unica fuente de verdad.
+- El motor no conoce textos ni historias concretas.
+- La UI no calcula consecuencias de carrera.
+- `effects` es para consecuencias directas.
+- `timePasses` es para crecimiento pasivo en periodos largos.
+- Entrevistas solo construyen personalidad.
+- Personality signals son invisibles; traits son rasgos consolidados.
+- El crecimiento importante debe sentirse como carrera, no como premio arcade.
+- Las transiciones cinematograficas rompen el ritmo y pueden consolidar stats.
+- Agregar contenido no deberia requerir cambiar formulas del motor salvo que se
+  este agregando una mecanica nueva.

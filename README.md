@@ -85,6 +85,40 @@ Plan general: [doc/seasons.md](doc/seasons.md)
 
 Plan del Capítulo I: [doc/steps/season1/Capitulo_1_Los_Primeros_Acordes_Plan.md](doc/steps/season1/Capitulo_1_Los_Primeros_Acordes_Plan.md)
 
+## Personalidad del jugador
+
+El sistema de personalidad separa dos capas:
+
+- `personalitySignals`: contadores internos, acumulables e invisibles para el jugador.
+- `personalityTraits`: rasgos visibles que aparecen cuando una tendencia ya se consolidó.
+
+Las decisiones y entrevistas no convierten al personaje inmediatamente en "Rebelde", "Humilde" o "Líder". Primero suman señales como `humble`, `leader`, `authentic`, `rebellion`, `pragmatic` o `ambition`. Luego, en momentos importantes de la carrera, el juego puede recalcular los traits visibles a partir de esas señales.
+
+Esto permite que la personalidad no funcione como una recompensa ni como un castigo, sino como una lectura narrativa de cómo viene actuando el músico. Por ejemplo, un jugador puede acumular `humble: 6`, `leader: 2`, `authentic: 4` y `rebellion: 1`; esas señales cuentan una historia interna aunque todavía no todas se hayan convertido en rasgos visibles.
+
+Las entrevistas siguen una regla especial: construyen personalidad de forma silenciosa y no modifican atributos como fama, talento, salud, dinero o reputación. Cada respuesta aporta exactamente una `personalitySignal`, pero la pregunta siempre debe nacer de algo que pasó en la carrera para que no se sienta como un test psicológico.
+
+Documentación completa: [doc/personality-system.md](doc/personality-system.md)
+
+## Paso del tiempo
+
+Las transiciones temporales son el principal mecanismo de crecimiento pasivo de la carrera. En lugar de que cada decisión entregue premios inmediatos como `+15 fans`, el juego deja que pasen meses o años y recién ahí consolida el crecimiento de fondo.
+
+Para eso existe `timePasses`:
+
+```ts
+timePasses: {
+  months: 11,
+  intensity: "active"
+}
+```
+
+El contenido declara cuánto tiempo pasó y qué tan intenso fue el período. El motor calcula automáticamente recitales, fans, fama, dinero, talento, creatividad y desgaste de salud cuando corresponde.
+
+La intención es que cada cierto tramo largo de la historia, especialmente meses o años representados por una transición cinematográfica, el juego actualice esas estadísticas de fondo. Así el jugador siente que la banda viene trabajando, tocando y cambiando entre decisiones importantes, no que cada pantalla reparte puntos de forma inmediata.
+
+Documentación completa: [doc/time-passes-system.md](doc/time-passes-system.md)
+
 ## Shop
 
 La tienda no existe solo para subir estadísticas. Es parte de la narrativa.
@@ -104,12 +138,14 @@ Principios principales:
 - `GameState` es la única fuente de verdad.
 - El motor no conoce historias concretas.
 - Los eventos son datos.
-- Las opciones aplican `effects`.
+- Las opciones aplican `effects` para consecuencias directas.
+- Las transiciones temporales aplican `timePasses` para crecimiento pasivo.
+- Las entrevistas suman `personalitySignals` sin modificar atributos.
 - El historial registra decisiones tomadas.
 - El flujo define tipos de pantalla, no contenido.
 - La UI consume el estado y renderiza componentes.
 
-Esto permite que dos jugadores pasen por un flujo parecido pero vivan carreras distintas según rol, atributos, rasgos, dinero, fama, reputación, salud, compras e historial.
+Esto permite que dos jugadores pasen por un flujo parecido pero vivan carreras distintas según rol, atributos, rasgos, señales de personalidad, dinero, fama, reputación, salud, compras, paso del tiempo e historial.
 
 Documentación completa: [doc/Arquitectura_Motor_Juego_MVP.md](doc/Arquitectura_Motor_Juego_MVP.md)
 
@@ -117,6 +153,8 @@ Documentación completa: [doc/Arquitectura_Motor_Juego_MVP.md](doc/Arquitectura_
 
 - Filosofía narrativa, lenguaje y shop: [doc/Filosofia_Narrativa_y_Shop.md](doc/Filosofia_Narrativa_y_Shop.md)
 - Arquitectura del motor: [doc/Arquitectura_Motor_Juego_MVP.md](doc/Arquitectura_Motor_Juego_MVP.md)
+- Sistema de personalidad del jugador: [doc/personality-system.md](doc/personality-system.md)
+- Sistema de paso del tiempo: [doc/time-passes-system.md](doc/time-passes-system.md)
 - Temporadas y capítulos: [doc/seasons.md](doc/seasons.md)
 - Plan del Capítulo I: [doc/steps/season1/Capitulo_1_Los_Primeros_Acordes_Plan.md](doc/steps/season1/Capitulo_1_Los_Primeros_Acordes_Plan.md)
 - Reportes de implementación del Capítulo I: [doc/steps/season1](doc/steps/season1)

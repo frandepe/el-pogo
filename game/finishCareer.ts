@@ -1,31 +1,33 @@
 import type { CareerEnding, CareerResult, GameState } from "./types";
+import { recalculatePersonalityTraits } from "./personality";
 
 export function finishCareer(gameState: GameState): CareerResult {
-  const score = calculateCareerScore(gameState);
+  const finalState = recalculatePersonalityTraits(gameState);
+  const score = calculateCareerScore(finalState);
 
   return {
-    artistName: gameState.artistName,
+    artistName: finalState.artistName,
     score,
     ending: getCareerEnding(score),
     stats: {
-      fame: gameState.fame,
-      fans: gameState.fans,
-      money: gameState.money,
-      talent: gameState.talent,
-      creativity: gameState.creativity,
-      charisma: gameState.charisma,
-      reputation: gameState.reputation,
-      health: gameState.health,
-      albums: gameState.albums,
-      concerts: gameState.concerts,
-      awards: gameState.awards,
-      grammys: gameState.grammys,
-      worldTours: gameState.worldTours,
-      recordDeals: gameState.recordDeals,
-      bandBreakups: gameState.bandBreakups,
+      fame: finalState.fame,
+      fans: finalState.fans,
+      money: finalState.money,
+      talent: finalState.talent,
+      creativity: finalState.creativity,
+      charisma: finalState.charisma,
+      reputation: finalState.reputation,
+      health: finalState.health,
+      albums: finalState.albums,
+      concerts: finalState.concerts,
+      awards: finalState.awards,
+      grammys: finalState.grammys,
+      worldTours: finalState.worldTours,
+      recordDeals: finalState.recordDeals,
+      bandBreakups: finalState.bandBreakups,
     },
-    personalityTraits: gameState.personalityTraits,
-    history: gameState.history,
+    personalityTraits: finalState.personalityTraits,
+    history: finalState.history,
   };
 }
 

@@ -1,70 +1,22 @@
+import { personalitySignals as personalitySignalOrder } from "./personalitySignals";
+import {
+  personalityTraitRules,
+  type PersonalityTraitRule,
+} from "./personalityTraitRules";
 import type {
   GameState,
   PersonalitySignal,
   PersonalityTrait,
 } from "./types";
 
-type PersonalitySignalRequirement = {
-  field: PersonalitySignal;
-  operator: ">=" | "<=" | ">" | "<" | "=";
-  value: number;
+type ApplyPersonalitySignalsOptions = {
+  unlockTraits?: boolean;
 };
-
-type PersonalityTraitRule = {
-  trait: PersonalityTrait;
-  requires: readonly PersonalitySignalRequirement[];
-};
-
-const personalityTraitRules: readonly PersonalityTraitRule[] = [
-  {
-    trait: "Rebelde",
-    requires: [{ field: "rebellion", operator: ">=", value: 3 }],
-  },
-  {
-    trait: "Perfeccionista",
-    requires: [{ field: "discipline", operator: ">=", value: 4 }],
-  },
-  {
-    trait: "Humilde",
-    requires: [
-      { field: "humble", operator: ">=", value: 3 },
-      { field: "egocentric", operator: "<=", value: 1 },
-    ],
-  },
-  {
-    trait: "Ambicioso",
-    requires: [
-      { field: "ambition", operator: ">=", value: 3 },
-      { field: "humble", operator: "<=", value: 1 },
-    ],
-  },
-  {
-    trait: "Impulsivo",
-    requires: [
-      { field: "fearless", operator: ">=", value: 2 },
-      { field: "discipline", operator: "<=", value: 1 },
-    ],
-  },
-  {
-    trait: "Diplomático",
-    requires: [
-      { field: "authentic", operator: ">=", value: 2 },
-      { field: "impulsive", operator: "<=", value: 1 },
-    ],
-  },
-  {
-    trait: "Temerario",
-    requires: [{ field: "fearless", operator: ">=", value: 4 }],
-  },
-  {
-    trait: "Leal",
-    requires: [{ field: "loyalty", operator: ">=", value: 4 }],
-  },
-];
 
 export function applyPersonalitySignals(
   gameState: GameState,
   signals: readonly PersonalitySignal[] = [],
+  options: ApplyPersonalitySignalsOptions = {},
 ): GameState {
   if (signals.length === 0) {
     return gameState;
@@ -76,32 +28,55 @@ export function applyPersonalitySignals(
     personalitySignals[signal] = (personalitySignals[signal] ?? 0) + 1;
   }
 
-  return {
+  const nextState = {
     ...gameState,
     personalitySignals,
-    personalityTraits: getUnlockedPersonalityTraits({
-      ...gameState,
-      personalitySignals,
-    }),
+  };
+
+  return options.unlockTraits ? recalculatePersonalityTraits(nextState) : nextState;
+}
+
+export function recalculatePersonalityTraits(gameState: GameState): GameState {
+  return {
+    ...gameState,
+    personalityTraits: getUnlockedPersonalityTraits(gameState),
   };
 }
 
-function getUnlockedPersonalityTraits(
+export function getUnlockedPersonalityTraits(
   gameState: GameState,
 ): readonly PersonalityTrait[] {
-  const traits = [...gameState.personalityTraits];
+  const traits: PersonalityTrait[] = [];
 
   for (const rule of personalityTraitRules) {
-    if (traits.includes(rule.trait)) {
-      continue;
-    }
-
     if (matchesTraitRule(gameState, rule)) {
       traits.push(rule.trait);
     }
   }
 
   return traits;
+}
+
+export function getDominantPersonalitySignals(
+  gameState: GameState,
+  limit = personalitySignalOrder.length,
+): readonly PersonalitySignal[] {
+  return personalitySignalOrder
+    .filter((signal) => (gameState.personalitySignals[signal] ?? 0) > 0)
+    .sort((left, right) => {
+      const leftValue = gameState.personalitySignals[left] ?? 0;
+      const rightValue = gameState.personalitySignals[right] ?? 0;
+
+      if (rightValue !== leftValue) {
+        return rightValue - leftValue;
+      }
+
+      return (
+        personalitySignalOrder.indexOf(left) -
+        personalitySignalOrder.indexOf(right)
+      );
+    })
+    .slice(0, limit);
 }
 
 function matchesTraitRule(
