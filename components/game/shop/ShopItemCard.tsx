@@ -1,3 +1,4 @@
+import { formatNarrativeText } from "@/game/narrativeText";
 import { getShopItemStatus } from "@/game/shop";
 import type { Effect, GameState, ShopItem } from "@/game/types";
 
@@ -50,7 +51,7 @@ export function ShopItemCard({
           </div>
         </div>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {item.text}
+          {formatNarrativeText(item.text, gameState, `shop:${item.id}`)}
         </p>
       </div>
 

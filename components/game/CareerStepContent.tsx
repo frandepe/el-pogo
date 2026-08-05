@@ -1,5 +1,6 @@
 import { getOptionRarityLabel } from "@/game/optionRarity";
 import { getOptionAvailability } from "@/game/optionAvailability";
+import { formatNarrativeText } from "@/game/narrativeText";
 import type {
   CareerResult,
   GameEvent,
@@ -79,7 +80,11 @@ export function CareerStepContent({
         {currentEvent ? (
           <>
             <p className="max-w-3xl text-xl leading-9 text-foreground">
-              {currentEvent.text}
+              {formatNarrativeText(
+                currentEvent.text,
+                gameState,
+                `${currentEvent.id}:text`,
+              )}
             </p>
             <div className="grid gap-3">
               {currentEvent.options.map((option) => {
@@ -107,7 +112,13 @@ export function CareerStepContent({
                         {rarityLabel}
                       </span>
                     ) : null}
-                    <span className="block">{option.text}</span>
+                    <span className="block">
+                      {formatNarrativeText(
+                        option.text,
+                        gameState,
+                        `${currentEvent.id}:option:${option.id}`,
+                      )}
+                    </span>
                     {!availability.canSelect ? (
                       <span className="mt-3 inline-flex rounded-md border border-white/10 bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                         {availability.reason}

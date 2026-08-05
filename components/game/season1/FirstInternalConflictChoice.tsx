@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
+import { formatNarrativeText } from "@/game/narrativeText";
 import { getOptionRarity, getOptionRarityLabel } from "@/game/optionRarity";
 import {
   getFirstSelectableOption,
@@ -53,16 +54,24 @@ export function FirstInternalConflictChoice({
           Capítulo I
         </p>
         <h2 className="mt-2 font-heading text-4xl font-semibold">
-          {event.text}
+          {formatNarrativeText(event.text, gameState, `${event.id}:text`)}
         </h2>
         <p className="mt-3 text-base leading-7 text-muted-foreground">
-          {event.description}
+          {formatNarrativeText(
+            event.description,
+            gameState,
+            `${event.id}:description`,
+          )}
         </p>
         <p className="mt-6 text-xl font-medium text-foreground">¿Qué hacés?</p>
       </div>
 
       <div
-        aria-label={event.text}
+        aria-label={formatNarrativeText(
+          event.text,
+          gameState,
+          `${event.id}:text`,
+        )}
         className="grid gap-3 lg:grid-cols-3"
         role="radiogroup"
       >
@@ -72,7 +81,11 @@ export function FirstInternalConflictChoice({
           return (
             <ChoiceOptionCard
               badge={option.badge}
-              description={option.text}
+              description={formatNarrativeText(
+                option.text,
+                gameState,
+                `${event.id}:option:${option.id}`,
+              )}
               disabledReason={
                 availability.canSelect ? undefined : availability.reason
               }

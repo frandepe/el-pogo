@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
-import { replaceBandMemberMentions } from "@/game/bandMembers";
+import { formatNarrativeText } from "@/game/narrativeText";
 import {
   getNarrativeOpportunityOptionAvailability,
   type NarrativeOpportunityResolution,
@@ -60,9 +60,9 @@ export function Chapter2FirstCallScene({
   }
 
   if (resolution) {
-    const outcomeText = replaceBandMemberMentions(
+    const outcomeText = formatNarrativeText(
       resolution.outcome.text,
-      gameState.role,
+      gameState,
       `${resolution.opportunity.id}:${resolution.variant.id}:${resolution.option.id}:${resolution.outcome.id}`,
     );
 
@@ -89,7 +89,11 @@ export function Chapter2FirstCallScene({
           {variant.title}
         </h2>
         <p className="mt-3 text-base leading-7 text-muted-foreground">
-          {variant.text}
+          {formatNarrativeText(
+            variant.text,
+            gameState,
+            `${chapter2FirstCallOpportunity.id}:${variant.id}:variant`,
+          )}
         </p>
       </div>
 
@@ -106,7 +110,11 @@ export function Chapter2FirstCallScene({
 
           return (
             <ChoiceOptionCard
-              description={option.text}
+              description={formatNarrativeText(
+                option.text,
+                gameState,
+                `${chapter2FirstCallOpportunity.id}:${variant.id}:${option.id}:option`,
+              )}
               disabledReason={
                 availability.canSelect ? undefined : availability.reason
               }

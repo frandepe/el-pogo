@@ -1,5 +1,6 @@
 "use client";
 
+import { formatNarrativeText } from "@/game/narrativeText";
 import type { GameState } from "@/game/types";
 import { InfoScene } from "../info/InfoScene";
 import { getFirstDemoRepercussion } from "./firstDemoRepercussion";
@@ -23,7 +24,13 @@ export function FirstDemoRepercussionSummary({
       tone={repercussion.tone}
       onAction={onContinue}
     >
-      <p>{repercussion.text}</p>
+      <p>
+        {formatNarrativeText(
+          repercussion.text,
+          gameState,
+          `first-demo-repercussion:${repercussion.title}`,
+        )}
+      </p>
     </InfoScene>
   );
 }

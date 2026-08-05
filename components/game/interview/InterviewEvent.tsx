@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { formatNarrativeText } from "@/game/narrativeText";
 import type {
   InterviewAnswerOption,
   InterviewDefinition,
@@ -10,8 +11,10 @@ import {
   selectInterviewQuestions,
   validateInterviewDefinition,
 } from "@/game/interviews";
+import type { GameState } from "@/game/types";
 
 type InterviewEventProps = {
+  gameState: GameState;
   interview: InterviewDefinition;
   onAnswer: (
     interview: InterviewDefinition,
@@ -24,6 +27,7 @@ type InterviewEventProps = {
 const transitionMs = 220;
 
 export function InterviewEvent({
+  gameState,
   interview,
   onAnswer,
   onComplete,
@@ -80,7 +84,11 @@ export function InterviewEvent({
             {interview.title}
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-            {interview.intro}
+            {formatNarrativeText(
+              interview.intro,
+              gameState,
+              `${interview.id}:intro`,
+            )}
           </p>
         </div>
 
@@ -133,14 +141,22 @@ export function InterviewEvent({
                 <span aria-hidden="true" className="text-primary">
                   &ldquo;
                 </span>
-                {question.question}
+                {formatNarrativeText(
+                  question.question,
+                  gameState,
+                  `${interview.id}:question:${question.id}`,
+                )}
                 <span aria-hidden="true" className="text-primary">
                   &rdquo;
                 </span>
               </blockquote>
 
               <div
-                aria-label={question.question}
+                aria-label={formatNarrativeText(
+                  question.question,
+                  gameState,
+                  `${interview.id}:question:${question.id}`,
+                )}
                 className="grid gap-3"
                 role="radiogroup"
               >
@@ -162,7 +178,11 @@ export function InterviewEvent({
                     type="button"
                     onClick={() => handleAnswer(option)}
                   >
-                    {option.text}
+                    {formatNarrativeText(
+                      option.text,
+                      gameState,
+                      `${interview.id}:question:${question.id}:option:${option.id}`,
+                    )}
                   </button>
                 ))}
               </div>

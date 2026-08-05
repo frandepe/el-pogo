@@ -1,5 +1,6 @@
 "use client";
 
+import { formatNarrativeText } from "@/game/narrativeText";
 import { personalitySignals } from "@/game/personalitySignals";
 import type { GameState, PersonalitySignal } from "@/game/types";
 import { InfoScene } from "../info/InfoScene";
@@ -36,7 +37,13 @@ export function FirstInterviewPublishedSummary({
       tone={consequence.tone}
       onAction={onContinue}
     >
-      <p>{consequence.text}</p>
+      <p>
+        {formatNarrativeText(
+          consequence.text,
+          gameState,
+          `first-interview-published:${consequence.title}`,
+        )}
+      </p>
     </InfoScene>
   );
 }

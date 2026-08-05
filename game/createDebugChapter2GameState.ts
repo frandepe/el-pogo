@@ -1,6 +1,5 @@
 import { careerFlow } from "./flow";
 import { personalitySignals } from "./personalitySignals";
-import { recalculatePersonalityTraits } from "./personality";
 import type {
   CareerHistoryEntry,
   GameState,
@@ -12,7 +11,7 @@ export function createDebugChapter2GameState(gameState: GameState): GameState {
   const chapter2StartStep = Math.max(1, careerFlow.indexOf("Upgrade"));
   const history = createChapter1History(personalitySignalCounts);
 
-  return recalculatePersonalityTraits({
+  return {
     ...gameState,
     artistName: gameState.artistName || "Artista Dev",
     bandName: gameState.bandName || randomFrom(bandNames),
@@ -34,9 +33,10 @@ export function createDebugChapter2GameState(gameState: GameState): GameState {
     worldTours: 0,
     recordDeals: 0,
     bandBreakups: 0,
+    personalityTraits: [],
     personalitySignals: personalitySignalCounts,
     history,
-  });
+  };
 }
 
 function createRandomPersonalitySignals() {

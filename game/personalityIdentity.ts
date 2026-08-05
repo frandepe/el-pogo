@@ -1,10 +1,11 @@
 import { personalitySignals } from "./personalitySignals";
-import type { GameState, PersonalitySignal } from "./types";
+import type { GameState, PersonalitySignal, PersonalityTrait } from "./types";
 
 type PersonalityIdentity = {
   copy: string;
   label: string;
   signal?: PersonalitySignal;
+  trait: PersonalityTrait;
 };
 
 export function getPersonalityIdentity(
@@ -42,62 +43,80 @@ function getDominantSignal(gameState: GameState) {
 const signalIdentityCopy = {
   ambition: {
     label: "Ambicioso",
+    trait: "Ambicioso",
     copy: "No esperaste a que el mundo te hiciera lugar. Cada oportunidad la miraste como una puerta que había que empujar.",
   },
   authentic: {
     label: "Auténtico",
+    trait: "Auténtico",
     copy: "Cuando convenía disfrazarse de otra cosa, elegiste sonar como ustedes. Aunque eso hiciera el camino más lento.",
   },
   charismatic: {
     label: "Carismático",
+    trait: "Carismático",
     copy: "Hubo noches torpes, salas vacías y preguntas incómodas. Igual, la gente empezó a quedarse mirando.",
   },
   creativity: {
     label: "Creativo",
+    trait: "Creativo",
     copy: "No buscaste repetir una fórmula. Cada decisión dejó una marca propia, incluso cuando nadie sabía si iba a funcionar.",
   },
   discipline: {
     label: "Disciplinado",
+    trait: "Disciplinado",
     copy: "Cuando el entusiasmo no alcanzaba, apareció la constancia. Volviste a la sala aunque nadie estuviera mirando.",
   },
   egocentric: {
     label: "Egocéntrico",
+    trait: "Egocéntrico",
     copy: "No te dio miedo ocupar el centro. A veces eso encendió la banda; otras, obligó al resto a correrse.",
   },
   fearless: {
     label: "Intrépido",
+    trait: "Intrépido",
     copy: "Elegiste el camino que podía salir mal. No porque fuera seguro, sino porque era el único que parecía vivo.",
   },
   humble: {
     label: "Humilde",
+    trait: "Humilde",
     copy: "No te interesa parecer más grande de lo que sos. Por eso cada paso chico todavía pesa.",
   },
   impulsive: {
     label: "Impulsivo",
+    trait: "Impulsivo",
     copy: "Cuando había que pensarlo dos veces, muchas veces ya estabas arriba del escenario. A veces el instinto también escribe canciones.",
   },
   leader: {
     label: "Líder",
+    trait: "Líder",
     copy: "Cuando nadie sabía bien qué hacer, alguien tenía que mover la primera pieza. Más de una vez, fuiste vos.",
   },
   loyalty: {
     label: "Leal",
+    trait: "Leal",
     copy: "Cuando las cosas se complicaron, elegiste cuidar a la banda antes que salvarte solo.",
   },
   perfectionist: {
     label: "Perfeccionista",
+    trait: "Perfeccionista",
     copy: "No te alcanzó con que sonara bien. Volviste sobre cada detalle como si ahí se jugara algo más grande.",
   },
   pragmatic: {
     label: "Pragmático",
+    trait: "Pragmático",
     copy: "No todas las decisiones fueron románticas. Algunas simplemente mantuvieron viva a la banda.",
   },
   rebellion: {
     label: "Rebelde",
+    trait: "Rebelde",
     copy: "Cuando apareció una regla, tu primer impulso fue probar cuánto ruido hacía romperla.",
   },
   resilient: {
     label: "Resiliente",
+    trait: "Resiliente",
     copy: "El primer golpe no te definió. Lo que empezó a definirte fue volver después del golpe.",
   },
-} satisfies Record<PersonalitySignal, Pick<PersonalityIdentity, "copy" | "label">>;
+} satisfies Record<
+  PersonalitySignal,
+  Pick<PersonalityIdentity, "copy" | "label" | "trait">
+>;

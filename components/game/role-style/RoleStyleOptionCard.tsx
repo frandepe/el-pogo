@@ -1,3 +1,4 @@
+import { formatNarrativeText } from "@/game/narrativeText";
 import { getOptionRarity, getOptionRarityLabel } from "@/game/optionRarity";
 import { getOptionAvailability } from "@/game/optionAvailability";
 import type { GameState } from "@/game/types";
@@ -22,7 +23,11 @@ export function RoleStyleOptionCard({
   return (
     <ChoiceOptionCard
       badge={option.badge}
-      description={option.text}
+      description={formatNarrativeText(
+        option.text,
+        gameState,
+        `role-style:${option.id}`,
+      )}
       disabledReason={availability.canSelect ? undefined : availability.reason}
       isSelected={isSelected}
       rarity={getOptionRarity(option)}

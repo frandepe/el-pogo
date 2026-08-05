@@ -3,6 +3,7 @@ import {
   personalityTraitRules,
   type PersonalityTraitRule,
 } from "./personalityTraitRules";
+import { getPersonalityIdentity } from "./personalityIdentity";
 import type {
   GameState,
   PersonalitySignal,
@@ -40,6 +41,15 @@ export function recalculatePersonalityTraits(gameState: GameState): GameState {
   return {
     ...gameState,
     personalityTraits: getUnlockedPersonalityTraits(gameState),
+  };
+}
+
+export function revealDominantPersonalityTrait(gameState: GameState): GameState {
+  const identity = getPersonalityIdentity(gameState);
+
+  return {
+    ...gameState,
+    personalityTraits: identity ? [identity.trait] : [],
   };
 }
 

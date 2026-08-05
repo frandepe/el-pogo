@@ -37,6 +37,7 @@ import {
   applyPersonalitySignals,
   getDominantPersonalitySignals,
   recalculatePersonalityTraits,
+  revealDominantPersonalityTrait,
 } from "./personality";
 import {
   getNarrativeOpportunityVariant,
@@ -178,7 +179,7 @@ export function completeCareer(gameState: GameState): GameState {
 
 export function startChapter2(gameState: GameState): GameState {
   return {
-    ...recalculatePersonalityTraits(gameState),
+    ...revealDominantPersonalityTrait(gameState),
     age: 21,
     currentStep: Math.max(1, careerFlow.indexOf("Upgrade")),
   };

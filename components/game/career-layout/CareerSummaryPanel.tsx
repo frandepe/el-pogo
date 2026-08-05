@@ -1,5 +1,4 @@
 import { ShoppingCart } from "lucide-react";
-import { getPersonalityIdentity } from "@/game/personalityIdentity";
 import type { GameState, StepType } from "@/game/types";
 
 const careerChapters = [
@@ -49,7 +48,7 @@ export function CareerSummaryPanel({
   onRetire,
 }: CareerSummaryPanelProps) {
   const currentChapter = getCurrentChapter(gameState.age);
-  const personalityIdentity = getPersonalityIdentity(gameState);
+  const personalityTrait = gameState.personalityTraits[0];
   const primaryStats = [
     { label: "Fama", value: gameState.fame },
     { label: "Fans", value: formatNumber(gameState.fans) },
@@ -90,12 +89,12 @@ export function CareerSummaryPanel({
               /
             </span>
             <span>{gameState.age} Años</span>
-            {personalityIdentity ? (
+            {personalityTrait ? (
               <>
                 <span aria-hidden="true" className="text-border">
                   /
                 </span>
-                <span>{personalityIdentity.label}</span>
+                <span>{personalityTrait}</span>
               </>
             ) : null}
           </div>

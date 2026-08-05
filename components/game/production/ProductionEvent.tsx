@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
+import { formatNarrativeText } from "@/game/narrativeText";
 import { getOptionAvailability } from "@/game/optionAvailability";
 import {
   resolveProductionOutcome,
@@ -78,7 +79,13 @@ export function ProductionEvent({
         tone="neutral"
         onAction={() => setHasStarted(true)}
       >
-        <p>{production.intro}</p>
+        <p>
+          {formatNarrativeText(
+            production.intro,
+            gameState,
+            `${production.id}:intro`,
+          )}
+        </p>
       </InfoScene>
     );
   }
@@ -92,7 +99,13 @@ export function ProductionEvent({
         tone={resolvedOutcome.tone}
         onAction={onComplete}
       >
-        <p>{resolvedOutcome.text}</p>
+        <p>
+          {formatNarrativeText(
+            resolvedOutcome.text,
+            gameState,
+            `${production.id}:outcome:${resolvedOutcome.id}`,
+          )}
+        </p>
         <div className="mx-auto mt-2 flex max-w-xl flex-col items-center gap-3">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Resultado
@@ -150,7 +163,11 @@ export function ProductionEvent({
             {production.title}
           </h2>
           <p className="mt-3 text-base leading-7 text-muted-foreground">
-            {question.text}
+            {formatNarrativeText(
+              question.text,
+              gameState,
+              `${production.id}:question:${question.id}`,
+            )}
           </p>
         </div>
 
@@ -206,7 +223,11 @@ export function ProductionEvent({
                       {option.title}
                     </span>
                     <span className="mt-3 block text-sm leading-6 text-muted-foreground">
-                      {option.text}
+                      {formatNarrativeText(
+                        option.text,
+                        gameState,
+                        `${production.id}:question:${question.id}:option:${option.id}`,
+                      )}
                     </span>
                   </span>
 

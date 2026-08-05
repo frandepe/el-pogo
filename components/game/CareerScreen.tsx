@@ -1,11 +1,10 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
 import { useGameStore } from "@/game/store";
 import Image from "next/image";
 import { CareerLayout } from "./career-layout/CareerLayout";
-import { CareerStepContent } from "./CareerStepContent";
 import { Chapter2Intro } from "./chapters/Chapter2Intro";
 import { Chapter2PersonalityReveal } from "./chapters/Chapter2PersonalityReveal";
 import { ChapterIntro } from "./chapters/ChapterIntro";
@@ -40,7 +39,6 @@ export function CareerScreen() {
     gameState,
     startCareer,
     advanceStep,
-    chooseOption,
     applyEventOption,
     applyInterviewAnswer,
     applyProductionOption,
@@ -49,10 +47,8 @@ export function CareerScreen() {
     startChapter2,
     chooseNarrativeOpportunityOption,
     buyShopItem,
-    purchaseShopItem,
     receiveFirstCachet,
     finishCareer,
-    resetCareer,
   } = useGameStore();
   const [artistName, setArtistName] = useState("");
   const [role, setRole] = useState<RoleName>(roleOptions[0].name);
@@ -90,18 +86,7 @@ export function CareerScreen() {
   const [showChapter2FirstCall, setShowChapter2FirstCall] = useState(false);
 
   const currentStep = gameEngine.getCurrentStep(gameState);
-  const currentEvent = useMemo(
-    () => gameEngine.getCurrentEvent(gameState),
-    [gameState],
-  );
-  const visibleShopItems = useMemo(
-    () => gameEngine.getVisibleShopItems(gameState),
-    [gameState],
-  );
-  const careerResult = useMemo(
-    () => gameEngine.finishCareer(gameState),
-    [gameState],
-  );
+  const visibleShopItems = gameEngine.getVisibleShopItems(gameState);
 
   function handleCreateArtist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,34 +104,6 @@ export function CareerScreen() {
     setShowFirstCachet(true);
     setShowFirstMoney(true);
     setShowFirstReview(true);
-  }
-
-  function handleResetCareer() {
-    setShowChapterIntro(false);
-    setShowRoleStyleChoice(false);
-    setShowChapterTransition(false);
-    setShowFirstSeriousRehearsal(false);
-    setShowBandIdentityTransition(false);
-    setShowChooseBandName(false);
-    setShowFirstRecital(false);
-    setShowFirstRecitalSummary(false);
-    setShowFirstCachet(false);
-    setShowFirstMoney(false);
-    setShowFirstMoneySummary(false);
-    setShowFirstReview(false);
-    setShowFirstReviewSummary(false);
-    setShowAlmostAYearTransition(false);
-    setShowFirstInternalConflict(false);
-    setShowFirstInternalConflictSummary(false);
-    setShowFirstInterview(false);
-    setShowFirstInterviewPublished(false);
-    setShowFirstDemoProduction(false);
-    setShowFirstDemoRepercussion(false);
-    setShowPhoneCallTransition(false);
-    setShowChapter2Intro(false);
-    setShowChapter2PersonalityReveal(false);
-    setShowChapter2FirstCall(false);
-    resetCareer();
   }
 
   function handleFinishCareer() {
@@ -396,6 +353,7 @@ export function CareerScreen() {
         />
       ) : showFirstInterview ? (
         <FirstInterviewScene
+          gameState={gameState}
           onAnswer={applyInterviewAnswer}
           onComplete={() => {
             setShowFirstInterview(false);
@@ -463,23 +421,26 @@ export function CareerScreen() {
           }
           onComplete={() => {
             setShowChapter2FirstCall(false);
-            advanceStep();
           }}
         />
       ) : (
-        <CareerStepContent
-          careerResult={careerResult}
-          currentEvent={currentEvent}
-          currentStep={currentStep}
-          gameState={gameState}
-          shopItems={visibleShopItems}
-          onAdvanceStep={advanceStep}
-          onChooseOption={chooseOption}
-          onFinishCareer={handleFinishCareer}
-          onPurchaseShopItem={purchaseShopItem}
-          onResetCareer={handleResetCareer}
-        />
+        <DevelopmentEndNotice />
       )}
     </CareerLayout>
+  );
+}
+
+function DevelopmentEndNotice() {
+  return (
+    <section className="mx-auto flex min-h-[42dvh] w-full max-w-2xl flex-col items-center justify-center text-center">
+      <div className="w-full rounded-lg border border-white/10 bg-card/[0.45] px-6 py-10 shadow-2xl shadow-black/20 sm:px-10">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+          En desarrollo
+        </p>
+        <h2 className="mt-4 font-heading text-4xl font-semibold text-foreground sm:text-5xl">
+          Tengo hasta acá...
+        </h2>
+      </div>
+    </section>
   );
 }

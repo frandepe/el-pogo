@@ -1,6 +1,7 @@
 "use client";
 
 import { getLatestNarrativeConsequence } from "@/game/narrativeConsequences";
+import { formatNarrativeText } from "@/game/narrativeText";
 import type { GameState } from "@/game/types";
 import { InfoScene } from "../info/InfoScene";
 import { firstMoneyConsequences } from "./firstMoneyConsequences";
@@ -34,7 +35,13 @@ export function FirstMoneySummary({
       tone={consequence.tone}
       onAction={onContinue}
     >
-      <p>{consequence.text}</p>
+      <p>
+        {formatNarrativeText(
+          consequence.text,
+          gameState,
+          `first-money-summary:${consequence.title}`,
+        )}
+      </p>
     </InfoScene>
   );
 }

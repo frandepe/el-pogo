@@ -408,6 +408,29 @@ El historial no reconstruye el estado. Sirve para:
 
 ---
 
+## 10.1. Placeholders narrativos
+
+Los textos narrativos pueden usar placeholders para mencionar integrantes
+genericos de la banda sin nombrar accidentalmente el rol del jugador como si
+fuera otra persona.
+
+Ejemplo:
+
+```ts
+"La mamá {randomBandMemberPossessive} apareció con empanadas."
+```
+
+La UI debe pasar textos narrativos por `formatNarrativeText(text, gameState,
+seed)` antes de renderizarlos.
+
+Documentacion completa:
+
+```text
+doc/narrative-placeholders.md
+```
+
+---
+
 ## 11. Seleccion de eventos y opciones
 
 Los eventos son datos. El motor filtra por condiciones y selecciona contenido

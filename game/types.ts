@@ -123,9 +123,14 @@ export type PersonalityTrait =
   | "Impulsivo"
   | "Leal"
   | "Creativo"
+  | "Disciplinado"
+  | "Auténtico"
+  | "Carismático"
   | "Líder"
+  | "Intrépido"
   | "Pragmático"
-  | "Egocéntrico";
+  | "Egocéntrico"
+  | "Resiliente";
 
 export type ShopItem = {
   id: string;
