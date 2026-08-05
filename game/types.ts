@@ -101,6 +101,7 @@ export type GameEvent = {
   stepType: StepType;
   text: string;
   conditions?: readonly Condition[];
+  emergencyOption?: EventOption;
   options: readonly EventOption[];
   weight?: number;
 };

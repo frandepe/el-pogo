@@ -1,4 +1,5 @@
 import { getOptionRarityLabel } from "@/game/optionRarity";
+import { getOptionAvailability } from "@/game/optionAvailability";
 import type {
   CareerResult,
   GameEvent,
@@ -84,15 +85,19 @@ export function CareerStepContent({
               {currentEvent.options.map((option) => {
                 const rarityLabel = getOptionRarityLabel(option);
                 const isSpecial = option.rarity === "special";
+                const availability = getOptionAvailability(gameState, option);
 
                 return (
                   <button
                     className={[
                       "rounded-md border bg-card/[0.45] px-4 py-4 text-left transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.99] motion-reduce:transition-colors motion-reduce:active:scale-100",
-                      isSpecial
+                      !availability.canSelect
+                        ? "cursor-not-allowed border-white/10 opacity-55"
+                        : isSpecial
                         ? "border-[#d8b45f]/55 shadow-[0_0_0_1px_rgba(216,180,95,0.12),0_18px_52px_rgba(216,180,95,0.08)] hover:border-[#f0d58a]/80 hover:bg-secondary"
                         : "border-white/10 hover:border-primary/30 hover:bg-secondary",
                     ].join(" ")}
+                    disabled={!availability.canSelect}
                     key={option.id}
                     type="button"
                     onClick={() => onChooseOption(currentEvent.id, option.id)}
@@ -103,6 +108,11 @@ export function CareerStepContent({
                       </span>
                     ) : null}
                     <span className="block">{option.text}</span>
+                    {!availability.canSelect ? (
+                      <span className="mt-3 inline-flex rounded-md border border-white/10 bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        {availability.reason}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}

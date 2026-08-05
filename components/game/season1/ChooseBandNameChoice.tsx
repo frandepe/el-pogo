@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
 import { getOptionRarity, getOptionRarityLabel } from "@/game/optionRarity";
+import {
+  getFirstSelectableOption,
+  getOptionAvailability,
+  getSelectableOptionById,
+} from "@/game/optionAvailability";
 import type { EventOption, GameEvent, GameState } from "@/game/types";
 import { ChoiceOptionCard } from "../choices/ChoiceOptionCard";
 import { bandNameCatalog } from "./bandNameCatalog";
@@ -26,10 +31,12 @@ export function ChooseBandNameChoice({
     [gameState],
   );
   const [selectedOptionId, setSelectedOptionId] = useState(
-    chooseBandNameEvent.options[0]?.id,
+    getFirstSelectableOption(gameState, chooseBandNameEvent.options)?.id,
   );
-  const selectedOption = chooseBandNameEvent.options.find(
-    (option) => option.id === selectedOptionId,
+  const selectedOption = getSelectableOptionById(
+    gameState,
+    chooseBandNameEvent.options,
+    selectedOptionId,
   );
 
   function handleConfirm() {
@@ -59,22 +66,30 @@ export function ChooseBandNameChoice({
         className="grid gap-3 lg:grid-cols-3"
         role="radiogroup"
       >
-        {chooseBandNameEvent.options.map((option) => (
-          <ChoiceOptionCard
-            badge={option.badge}
-            description={option.text}
-            isSelected={selectedOptionId === option.id}
-            key={option.id}
-            rarityLabel={getOptionRarityLabel(option)}
-            rarity={getOptionRarity(option)}
-            title={option.title}
-            onSelect={() => setSelectedOptionId(option.id)}
-          />
-        ))}
+        {chooseBandNameEvent.options.map((option) => {
+          const availability = getOptionAvailability(gameState, option);
+
+          return (
+            <ChoiceOptionCard
+              badge={option.badge}
+              description={option.text}
+              disabledReason={
+                availability.canSelect ? undefined : availability.reason
+              }
+              isSelected={selectedOptionId === option.id}
+              key={option.id}
+              rarityLabel={getOptionRarityLabel(option)}
+              rarity={getOptionRarity(option)}
+              title={option.title}
+              onSelect={() => setSelectedOptionId(option.id)}
+            />
+          );
+        })}
       </div>
 
       <button
         className="w-fit rounded-md bg-primary px-5 py-3 font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] motion-reduce:transition-colors motion-reduce:active:scale-100"
+        disabled={!selectedOption}
         type="button"
         onClick={handleConfirm}
       >

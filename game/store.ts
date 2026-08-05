@@ -4,6 +4,12 @@ import { create } from "zustand";
 import { createInitialGameState } from "./createInitialGameState";
 import { gameEngine, type StartCareerInput } from "./gameEngine";
 import type { InterviewDefinition } from "./interviews";
+import type {
+  ProductionEventDefinition,
+  ProductionOption,
+  ProductionOutcome,
+  ProductionQuestion,
+} from "./productionEvents";
 import type { EventOption, GameEvent, GameState, TimePasses } from "./types";
 
 type GameStore = {
@@ -15,6 +21,15 @@ type GameStore = {
     interview: InterviewDefinition,
     questionId: string,
     optionId: string,
+  ) => void;
+  applyProductionOption: (
+    production: ProductionEventDefinition,
+    question: ProductionQuestion,
+    option: ProductionOption,
+  ) => void;
+  applyProductionOutcome: (
+    production: ProductionEventDefinition,
+    outcome: ProductionOutcome,
   ) => void;
   buyShopItem: (itemId: string) => void;
   purchaseShopItem: (itemId: string) => void;
@@ -47,6 +62,23 @@ export const useGameStore = create<GameStore>((set) => ({
         interview,
         questionId,
         optionId,
+      ),
+    })),
+  applyProductionOption: (production, question, option) =>
+    set((state) => ({
+      gameState: gameEngine.applyProductionOption(
+        state.gameState,
+        production,
+        question,
+        option,
+      ),
+    })),
+  applyProductionOutcome: (production, outcome) =>
+    set((state) => ({
+      gameState: gameEngine.applyProductionOutcome(
+        state.gameState,
+        production,
+        outcome,
       ),
     })),
   buyShopItem: (itemId) =>

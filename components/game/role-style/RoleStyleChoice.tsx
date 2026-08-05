@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { gameEngine } from "@/game/gameEngine";
+import { getOptionAvailability } from "@/game/optionAvailability";
 import type { EventOption, GameEvent, GameState } from "@/game/types";
 import type { RoleName } from "../data/roleOptions";
 import { RoleStyleOptionCard } from "./RoleStyleOptionCard";
@@ -27,10 +28,14 @@ export function RoleStyleChoice({
     [gameState, role],
   );
   const [selectedOptionId, setSelectedOptionId] = useState<string | undefined>(
-    event.options[0]?.id,
+    event.options.find(
+      (option) => getOptionAvailability(gameState, option).canSelect,
+    )?.id,
   );
   const selectedOption = event.options.find(
-    (option) => option.id === selectedOptionId,
+    (option) =>
+      option.id === selectedOptionId &&
+      getOptionAvailability(gameState, option).canSelect,
   );
 
   function handleConfirm() {
@@ -65,6 +70,7 @@ export function RoleStyleChoice({
             isSelected={selectedOptionId === option.id}
             key={option.id}
             option={option}
+            gameState={gameState}
             onSelect={() => setSelectedOptionId(option.id)}
           />
         ))}
@@ -72,6 +78,7 @@ export function RoleStyleChoice({
 
       <button
         className="w-fit rounded-md bg-primary px-5 py-3 font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] motion-reduce:transition-colors motion-reduce:active:scale-100"
+        disabled={!selectedOption}
         type="button"
         onClick={handleConfirm}
       >

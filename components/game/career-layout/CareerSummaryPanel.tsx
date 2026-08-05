@@ -87,7 +87,7 @@ export function CareerSummaryPanel({
             <span aria-hidden="true" className="text-border">
               /
             </span>
-            <span>Año {gameState.age}</span>
+            <span>{gameState.age} Años</span>
             <span aria-hidden="true" className="text-border">
               /
             </span>

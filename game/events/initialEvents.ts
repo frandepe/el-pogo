@@ -6,6 +6,15 @@ export const initialEvents = [
     stepType: "Choice",
     text: "Tenés toda la tarde libre antes del próximo ensayo. La banda no contesta mensajes y tu guitarra te mira desde el rincón.",
     weight: 1,
+    emergencyOption: {
+      id: "stay-home-with-dead-batteries",
+      text: "No te da para salir ni para comprar nada. Te quedás en casa, revisando ideas viejas y prometiendo administrar mejor la próxima.",
+      effects: {
+        creativity: 1,
+        reputation: -1,
+      },
+      personalitySignals: ["pragmatic", "resilient"],
+    },
     options: [
       {
         id: "practice-alone",

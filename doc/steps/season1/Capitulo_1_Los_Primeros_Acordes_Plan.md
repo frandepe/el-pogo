@@ -209,7 +209,8 @@ Puede mostrar:
 - comentarios de la gente;
 - repercusión en redes;
 - reacción de la banda;
-- reacción del periodista.
+- reacción del periodista;
+- otras alternativas.
 
 ---
 
@@ -241,17 +242,17 @@ Lo importante es que la banda ya tiene algo propio para mostrar.
 
 ### Step 20 — Primeras repercusiones
 
-**Tipo:** Pregunta
+Tipo: Info.
 
-Empiezan a aparecer pequeñas oportunidades.
+El contenido cambia según la calidad del demo.
 
-Por ejemplo:
+Bad
 
-- un festival;
-- un productor;
-- otro bar;
-- una entrevista;
-- una invitación inesperada.
+Acceptable
+
+Good
+
+Excellent
 
 ---
 

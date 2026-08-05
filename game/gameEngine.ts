@@ -7,11 +7,22 @@ import {
   applyInterviewAnswer as applyInterviewAnswerToState,
   type InterviewDefinition,
 } from "./interviews";
+import type {
+  ProductionEventDefinition,
+  ProductionOption,
+  ProductionOutcome,
+  ProductionQuestion,
+} from "./productionEvents";
+import { validateProductionEvent } from "./productionEvents";
 import {
   advanceStep as advanceFlowStep,
   careerFlow,
   getCurrentStep as getFlowCurrentStep,
 } from "./flow";
+import {
+  getOptionAvailability,
+  resolveEmergencyOptionSet,
+} from "./optionAvailability";
 import { finishCareer as createCareerResult } from "./finishCareer";
 import { selectNextEvent } from "./selectNextEvent";
 import {
@@ -63,6 +74,9 @@ export const gameEngine = {
   receiveFirstCachet,
   applyTimePasses,
   applyInterviewAnswer,
+  applyProductionOption,
+  applyProductionOutcome,
+  getProductionQuestionWithVisibleOptions,
   getDominantPersonalitySignals,
 };
 
@@ -88,7 +102,11 @@ export function chooseOption(
     throw new Error(`Event not found: ${eventId}`);
   }
 
-  const option = event.options.find((candidate) => candidate.id === optionId);
+  const option =
+    event.options.find((candidate) => candidate.id === optionId) ??
+    (event.emergencyOption?.id === optionId
+      ? event.emergencyOption
+      : undefined);
 
   if (!option) {
     throw new Error(`Option not found: ${optionId}`);
@@ -106,7 +124,9 @@ export function applyOption(
     throw new Error(`Event is not available: ${event.id}`);
   }
 
-  if (!validateConditions(gameState, option.conditions)) {
+  const availability = getOptionAvailability(gameState, option);
+
+  if (!availability.canSelect) {
     throw new Error(`Option is not available: ${option.id}`);
   }
 
@@ -179,6 +199,78 @@ export function applyInterviewAnswer(
   return applyInterviewAnswerToState(gameState, interview, questionId, optionId);
 }
 
+export function applyProductionOption(
+  gameState: GameState,
+  production: ProductionEventDefinition,
+  question: ProductionQuestion,
+  option: ProductionOption,
+): GameState {
+  validateProductionEvent(production);
+
+  if (!production.questions.some((candidate) => candidate.id === question.id)) {
+    throw new Error(
+      `Production question not found: ${production.id}/${question.id}`,
+    );
+  }
+
+  if (!question.options.some((candidate) => candidate.id === option.id)) {
+    throw new Error(
+      `Production option not found: ${production.id}/${question.id}/${option.id}`,
+    );
+  }
+
+  const availability = getOptionAvailability(gameState, option);
+
+  if (!availability.canSelect) {
+    throw new Error(
+      `Production option is not available: ${production.id}/${question.id}/${option.id}`,
+    );
+  }
+
+  const effectedState = applyEffects(gameState, option.effects);
+  const nextState = applyPersonalitySignals(
+    effectedState,
+    option.personalitySignals,
+  );
+
+  return {
+    ...nextState,
+    history: [
+      ...nextState.history,
+      {
+        eventId: production.id,
+        optionId: `${question.id}:${option.id}`,
+        personalitySignals: option.personalitySignals,
+      },
+    ],
+  };
+}
+
+export function applyProductionOutcome(
+  gameState: GameState,
+  production: ProductionEventDefinition,
+  outcome: ProductionOutcome,
+): GameState {
+  validateProductionEvent(production);
+
+  if (!production.outcomes.some((candidate) => candidate.id === outcome.id)) {
+    throw new Error(`Production outcome not found: ${production.id}/${outcome.id}`);
+  }
+
+  const nextState = applyEffects(gameState, outcome.effects);
+
+  return {
+    ...nextState,
+    history: [
+      ...nextState.history,
+      {
+        eventId: production.id,
+        optionId: `outcome:${outcome.id}`,
+      },
+    ],
+  };
+}
+
 export function getCurrentEvent(
   gameState: GameState,
   events: readonly GameEvent[] = initialEvents,
@@ -207,13 +299,17 @@ export function getEventWithVisibleOptions<TEvent extends GameEvent>(
 
 export function getVisibleEventOptions<TOption extends EventOption>(
   gameState: GameState,
-  event: { options: readonly TOption[]; stepType?: StepType },
+  event: {
+    emergencyOption?: TOption;
+    options: readonly TOption[];
+    stepType?: StepType;
+  },
 ): readonly TOption[] {
   const availableOptions = event.options.filter((option) =>
     validateConditions(gameState, option.conditions),
   );
 
-  return selectWeightedWithoutReplacement(
+  const selectedOptions = selectWeightedWithoutReplacement(
     availableOptions,
     VISIBLE_EVENT_OPTIONS_COUNT,
     getOptionRarityWeight,
@@ -221,6 +317,21 @@ export function getVisibleEventOptions<TOption extends EventOption>(
       ? undefined
       : (option) => getEffectSignature(option.effects),
   );
+
+  return resolveEmergencyOptionSet(gameState, event, selectedOptions);
+}
+
+export function getProductionQuestionWithVisibleOptions<
+  TQuestion extends ProductionQuestion,
+>(gameState: GameState, question: TQuestion): TQuestion {
+  return {
+    ...question,
+    options: resolveEmergencyOptionSet(
+      gameState,
+      question,
+      question.options,
+    ) as TQuestion["options"],
+  };
 }
 
 export function purchaseShopItem(

@@ -3,6 +3,15 @@ import type { NarrativeConsequence } from "@/game/narrativeConsequences";
 export const firstMoneyConsequences = [
   {
     eventId: "first-money",
+    optionId: "keep-the-coins",
+    eyebrow: "Después de mirar la billetera",
+    title: "La plata decidió por vos",
+    text: "No hubo afiches, cables nuevos ni gesto generoso. Apenas unas monedas guardadas con bronca y una cuenta mental de todo lo que ya no podían hacer. La banda no se rompió por eso, pero la próxima vez que alguien propuso gastar sin pensar, todos recordaron este silencio.",
+    tone: "negative",
+    cta: "Guardar lo que queda",
+  },
+  {
+    eventId: "first-money",
     optionId: "buy-working-cables",
     eyebrow: "Después de pasar por la casa de música",
     title: "El cable dejó de meter miedo",

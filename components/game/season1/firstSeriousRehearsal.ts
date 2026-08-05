@@ -7,6 +7,7 @@ export type SeasonDecisionOption = EventOption & {
 
 export type SeasonDecisionEvent = Omit<GameEvent, "options"> & {
   description: string;
+  emergencyOption?: SeasonDecisionOption;
   options: readonly SeasonDecisionOption[];
 };
 

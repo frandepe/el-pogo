@@ -6,6 +6,17 @@ export const firstMoneyEvent = {
   text: "¿Qué hacemos con la plata?",
   description:
     "Después de repartir la plata entre los cuatro, te quedaron $45. ¿Qué hacés con tu parte?",
+  emergencyOption: {
+    id: "keep-the-coins",
+    title: "No mover un peso",
+    text: "No alcanza para nada de lo que imaginabas. Guardás lo poco que queda y aceptás que esta vez la decisión la tomó la billetera.",
+    badge: "-1 Reputación / +1 Salud",
+    effects: {
+      reputation: -1,
+      health: 1,
+    },
+    personalitySignals: ["pragmatic", "resilient"],
+  },
   options: [
     {
       id: "buy-working-cables",

@@ -6,6 +6,7 @@ import { useGameStore } from "@/game/store";
 import Image from "next/image";
 import { CareerLayout } from "./career-layout/CareerLayout";
 import { CareerStepContent } from "./CareerStepContent";
+import { Chapter2Intro } from "./chapters/Chapter2Intro";
 import { ChapterIntro } from "./chapters/ChapterIntro";
 import { ChapterTransition } from "./chapters/ChapterTransition";
 import { roleOptions, type RoleName } from "./data/roleOptions";
@@ -16,6 +17,9 @@ import { AlmostAYearTransition } from "./season1/AlmostAYearTransition";
 import { BandIdentityTransition } from "./season1/BandIdentityTransition";
 import { ChooseBandNameChoice } from "./season1/ChooseBandNameChoice";
 import { FirstCachet } from "./season1/FirstCachet";
+import { FirstDemoProductionScene } from "./season1/FirstDemoProductionScene";
+import { FirstDemoRepercussionSummary } from "./season1/FirstDemoRepercussionSummary";
+import { FirstInterviewPublishedSummary } from "./season1/FirstInterviewPublishedSummary";
 import { FirstInterviewScene } from "./season1/FirstInterviewScene";
 import { FirstInternalConflictChoice } from "./season1/FirstInternalConflictChoice";
 import { FirstInternalConflictSummary } from "./season1/FirstInternalConflictSummary";
@@ -26,6 +30,7 @@ import { FirstRecitalSummary } from "./season1/FirstRecitalSummary";
 import { FirstReviewChoice } from "./season1/FirstReviewChoice";
 import { FirstReviewSummary } from "./season1/FirstReviewSummary";
 import { FirstSeriousRehearsalChoice } from "./season1/FirstSeriousRehearsalChoice";
+import { PhoneCallTransition } from "./season1/PhoneCallTransition";
 
 export function CareerScreen() {
   const {
@@ -35,6 +40,8 @@ export function CareerScreen() {
     chooseOption,
     applyEventOption,
     applyInterviewAnswer,
+    applyProductionOption,
+    applyProductionOutcome,
     applyTimePasses,
     buyShopItem,
     purchaseShopItem,
@@ -66,6 +73,13 @@ export function CareerScreen() {
   const [showFirstInternalConflictSummary, setShowFirstInternalConflictSummary] =
     useState(false);
   const [showFirstInterview, setShowFirstInterview] = useState(false);
+  const [showFirstInterviewPublished, setShowFirstInterviewPublished] =
+    useState(false);
+  const [showFirstDemoProduction, setShowFirstDemoProduction] = useState(false);
+  const [showFirstDemoRepercussion, setShowFirstDemoRepercussion] =
+    useState(false);
+  const [showPhoneCallTransition, setShowPhoneCallTransition] = useState(false);
+  const [showChapter2Intro, setShowChapter2Intro] = useState(false);
 
   const currentStep = gameEngine.getCurrentStep(gameState);
   const currentEvent = useMemo(
@@ -117,6 +131,11 @@ export function CareerScreen() {
     setShowFirstInternalConflict(false);
     setShowFirstInternalConflictSummary(false);
     setShowFirstInterview(false);
+    setShowFirstInterviewPublished(false);
+    setShowFirstDemoProduction(false);
+    setShowFirstDemoRepercussion(false);
+    setShowPhoneCallTransition(false);
+    setShowChapter2Intro(false);
     resetCareer();
   }
 
@@ -138,6 +157,11 @@ export function CareerScreen() {
     setShowFirstInternalConflict(false);
     setShowFirstInternalConflictSummary(false);
     setShowFirstInterview(false);
+    setShowFirstInterviewPublished(false);
+    setShowFirstDemoProduction(false);
+    setShowFirstDemoRepercussion(false);
+    setShowPhoneCallTransition(false);
+    setShowChapter2Intro(false);
     finishCareer();
   }
 
@@ -332,6 +356,46 @@ export function CareerScreen() {
           onAnswer={applyInterviewAnswer}
           onComplete={() => {
             setShowFirstInterview(false);
+            setShowFirstInterviewPublished(true);
+          }}
+        />
+      ) : showFirstInterviewPublished ? (
+        <FirstInterviewPublishedSummary
+          gameState={gameState}
+          onContinue={() => {
+            setShowFirstInterviewPublished(false);
+            setShowFirstDemoProduction(true);
+          }}
+        />
+      ) : showFirstDemoProduction ? (
+        <FirstDemoProductionScene
+          gameState={gameState}
+          onChooseOption={applyProductionOption}
+          onResolveOutcome={applyProductionOutcome}
+          onComplete={() => {
+            setShowFirstDemoProduction(false);
+            setShowFirstDemoRepercussion(true);
+          }}
+        />
+      ) : showFirstDemoRepercussion ? (
+        <FirstDemoRepercussionSummary
+          gameState={gameState}
+          onContinue={() => {
+            setShowFirstDemoRepercussion(false);
+            setShowPhoneCallTransition(true);
+          }}
+        />
+      ) : showPhoneCallTransition ? (
+        <PhoneCallTransition
+          onContinue={() => {
+            setShowPhoneCallTransition(false);
+            setShowChapter2Intro(true);
+          }}
+        />
+      ) : showChapter2Intro ? (
+        <Chapter2Intro
+          onContinue={() => {
+            setShowChapter2Intro(false);
             advanceStep();
           }}
         />
