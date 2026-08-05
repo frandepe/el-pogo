@@ -7,6 +7,7 @@ import Image from "next/image";
 import { CareerLayout } from "./career-layout/CareerLayout";
 import { CareerStepContent } from "./CareerStepContent";
 import { Chapter2Intro } from "./chapters/Chapter2Intro";
+import { Chapter2PersonalityReveal } from "./chapters/Chapter2PersonalityReveal";
 import { ChapterIntro } from "./chapters/ChapterIntro";
 import { ChapterTransition } from "./chapters/ChapterTransition";
 import { roleOptions, type RoleName } from "./data/roleOptions";
@@ -31,6 +32,8 @@ import { FirstReviewChoice } from "./season1/FirstReviewChoice";
 import { FirstReviewSummary } from "./season1/FirstReviewSummary";
 import { FirstSeriousRehearsalChoice } from "./season1/FirstSeriousRehearsalChoice";
 import { PhoneCallTransition } from "./season1/PhoneCallTransition";
+import { Chapter2FirstCallScene } from "./season2/Chapter2FirstCallScene";
+import { chapter2FirstCallOpportunity } from "./season2/chapter2FirstCall";
 
 export function CareerScreen() {
   const {
@@ -43,6 +46,8 @@ export function CareerScreen() {
     applyProductionOption,
     applyProductionOutcome,
     applyTimePasses,
+    startChapter2,
+    chooseNarrativeOpportunityOption,
     buyShopItem,
     purchaseShopItem,
     receiveFirstCachet,
@@ -80,6 +85,9 @@ export function CareerScreen() {
     useState(false);
   const [showPhoneCallTransition, setShowPhoneCallTransition] = useState(false);
   const [showChapter2Intro, setShowChapter2Intro] = useState(false);
+  const [showChapter2PersonalityReveal, setShowChapter2PersonalityReveal] =
+    useState(false);
+  const [showChapter2FirstCall, setShowChapter2FirstCall] = useState(false);
 
   const currentStep = gameEngine.getCurrentStep(gameState);
   const currentEvent = useMemo(
@@ -136,6 +144,8 @@ export function CareerScreen() {
     setShowFirstDemoRepercussion(false);
     setShowPhoneCallTransition(false);
     setShowChapter2Intro(false);
+    setShowChapter2PersonalityReveal(false);
+    setShowChapter2FirstCall(false);
     resetCareer();
   }
 
@@ -162,7 +172,36 @@ export function CareerScreen() {
     setShowFirstDemoRepercussion(false);
     setShowPhoneCallTransition(false);
     setShowChapter2Intro(false);
+    setShowChapter2PersonalityReveal(false);
+    setShowChapter2FirstCall(false);
     finishCareer();
+  }
+
+  function handleJumpToChapter2() {
+    setShowChapterIntro(false);
+    setShowRoleStyleChoice(false);
+    setShowChapterTransition(false);
+    setShowFirstSeriousRehearsal(false);
+    setShowBandIdentityTransition(false);
+    setShowChooseBandName(false);
+    setShowFirstRecital(false);
+    setShowFirstRecitalSummary(false);
+    setShowFirstCachet(false);
+    setShowFirstMoney(false);
+    setShowFirstMoneySummary(false);
+    setShowFirstReview(false);
+    setShowFirstReviewSummary(false);
+    setShowAlmostAYearTransition(false);
+    setShowFirstInternalConflict(false);
+    setShowFirstInternalConflictSummary(false);
+    setShowFirstInterview(false);
+    setShowFirstInterviewPublished(false);
+    setShowFirstDemoProduction(false);
+    setShowFirstDemoRepercussion(false);
+    setShowPhoneCallTransition(false);
+    setShowChapter2Intro(true);
+    setShowChapter2PersonalityReveal(false);
+    setShowChapter2FirstCall(false);
   }
 
   if (currentStep === "CreateArtist") {
@@ -221,7 +260,10 @@ export function CareerScreen() {
             Empezar carrera
           </button>
         </form>
-        <GameStateDebug gameState={gameState} />
+        <GameStateDebug
+          gameState={gameState}
+          onJumpToChapter2={handleJumpToChapter2}
+        />
       </main>
     );
   }
@@ -232,6 +274,7 @@ export function CareerScreen() {
       gameState={gameState}
       shopItems={visibleShopItems}
       onBuyShopItem={buyShopItem}
+      onJumpToChapter2={handleJumpToChapter2}
       onRetire={handleFinishCareer}
     >
       {showChapterIntro ? (
@@ -396,6 +439,30 @@ export function CareerScreen() {
         <Chapter2Intro
           onContinue={() => {
             setShowChapter2Intro(false);
+            startChapter2();
+            setShowChapter2PersonalityReveal(true);
+          }}
+        />
+      ) : showChapter2PersonalityReveal ? (
+        <Chapter2PersonalityReveal
+          gameState={gameState}
+          onContinue={() => {
+            setShowChapter2PersonalityReveal(false);
+            setShowChapter2FirstCall(true);
+          }}
+        />
+      ) : showChapter2FirstCall ? (
+        <Chapter2FirstCallScene
+          gameState={gameState}
+          onChoose={(variantId, optionId) =>
+            chooseNarrativeOpportunityOption(
+              chapter2FirstCallOpportunity,
+              variantId,
+              optionId,
+            )
+          }
+          onComplete={() => {
+            setShowChapter2FirstCall(false);
             advanceStep();
           }}
         />

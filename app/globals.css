@@ -166,6 +166,44 @@
     animation-delay: 1280ms;
   }
 
+  .chapter-personality-reveal {
+    --chapter-personality-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .chapter-personality-reveal__card {
+    animation: chapter-personality-card-enter 1200ms
+      var(--chapter-personality-ease-out) both;
+  }
+
+  .chapter-personality-reveal__eyebrow,
+  .chapter-personality-reveal__rule,
+  .chapter-personality-reveal__title,
+  .chapter-personality-reveal__copy,
+  .chapter-personality-reveal__action {
+    animation: chapter-personality-content-enter 900ms
+      var(--chapter-personality-ease-out) both;
+  }
+
+  .chapter-personality-reveal__eyebrow {
+    animation-delay: 420ms;
+  }
+
+  .chapter-personality-reveal__rule {
+    animation-delay: 720ms;
+  }
+
+  .chapter-personality-reveal__title {
+    animation-delay: 980ms;
+  }
+
+  .chapter-personality-reveal__copy {
+    animation-delay: 1420ms;
+  }
+
+  .chapter-personality-reveal__action {
+    animation-delay: 1960ms;
+  }
+
   .interview-event {
     --interview-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     opacity: 1;
@@ -278,6 +316,28 @@
   }
 }
 
+@keyframes chapter-personality-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chapter-personality-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes interview-answer-rise {
   from {
     opacity: 0;
@@ -310,6 +370,15 @@
   .cinematic-transition__title,
   .cinematic-transition__copy,
   .cinematic-transition__action {
+    animation: cinematic-fade-reduced 180ms ease-out both;
+  }
+
+  .chapter-personality-reveal__card,
+  .chapter-personality-reveal__eyebrow,
+  .chapter-personality-reveal__rule,
+  .chapter-personality-reveal__title,
+  .chapter-personality-reveal__copy,
+  .chapter-personality-reveal__action {
     animation: cinematic-fade-reduced 180ms ease-out both;
   }
 

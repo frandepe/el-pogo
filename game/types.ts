@@ -47,6 +47,8 @@ export type GameState = {
 export type CareerHistoryEntry = {
   eventId: string;
   optionId: string;
+  variantId?: string;
+  outcomeId?: string;
   personalitySignals?: readonly PersonalitySignal[];
 };
 

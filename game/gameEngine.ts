@@ -38,6 +38,13 @@ import {
   getDominantPersonalitySignals,
   recalculatePersonalityTraits,
 } from "./personality";
+import {
+  getNarrativeOpportunityVariant,
+  getVisibleNarrativeOpportunityOptions,
+  resolveNarrativeOpportunityOption,
+  type NarrativeOpportunityDefinition,
+  type NarrativeOpportunityResolution,
+} from "./narrativeOpportunity";
 import { selectWeightedWithoutReplacement } from "./selectWeightedWithoutReplacement";
 import { applyTimePasses as applyTimePassesToState } from "./timePasses";
 import type {
@@ -62,6 +69,7 @@ export const gameEngine = {
   applyOption,
   finishCareer,
   completeCareer,
+  startChapter2,
   getCurrentStep,
   advanceStep,
   getCurrentEvent,
@@ -78,6 +86,9 @@ export const gameEngine = {
   applyProductionOutcome,
   getProductionQuestionWithVisibleOptions,
   getDominantPersonalitySignals,
+  getNarrativeOpportunityVariant,
+  getVisibleNarrativeOpportunityOptions,
+  chooseNarrativeOpportunityOption,
 };
 
 const VISIBLE_EVENT_OPTIONS_COUNT = 3;
@@ -162,6 +173,14 @@ export function completeCareer(gameState: GameState): GameState {
   return {
     ...recalculatePersonalityTraits(gameState),
     currentStep: careerFlow.length - 1,
+  };
+}
+
+export function startChapter2(gameState: GameState): GameState {
+  return {
+    ...recalculatePersonalityTraits(gameState),
+    age: 21,
+    currentStep: Math.max(1, careerFlow.indexOf("Upgrade")),
   };
 }
 
@@ -269,6 +288,20 @@ export function applyProductionOutcome(
       },
     ],
   };
+}
+
+export function chooseNarrativeOpportunityOption(
+  gameState: GameState,
+  opportunity: NarrativeOpportunityDefinition,
+  variantId: string,
+  optionId: string,
+): NarrativeOpportunityResolution {
+  return resolveNarrativeOpportunityOption(
+    gameState,
+    opportunity,
+    variantId,
+    optionId,
+  );
 }
 
 export function getCurrentEvent(

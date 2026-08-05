@@ -195,6 +195,25 @@ Cada entrevista define 8 preguntas posibles; el motor de entrevista selecciona 3
 al azar. Cada pregunta tiene exactamente 4 respuestas y cada respuesta aporta una
 signal.
 
+### NarrativeOpportunity
+
+Evento narrativo con variantes y resolucion contextual.
+
+Se usa cuando el jugador debe elegir que intenta hacer, pero el resultado debe
+depender del estado de la carrera. A diferencia de `Choice`, fama, reputacion,
+talento, creatividad o personalidad no ocultan opciones narrativas. Esos datos
+solo modifican como responde el mundo.
+
+Cada variante define 6 opciones posibles y el motor muestra 3. La unica
+restriccion aceptada para bloquear una opcion es una limitacion fisica evidente,
+por ejemplo no tener dinero suficiente para pagar un costo.
+
+Documentacion completa:
+
+```text
+doc/narrative-opportunity-system.md
+```
+
 ### Shop
 
 La tienda permite compras de carrera, contratos y lujos.
@@ -403,6 +422,10 @@ Las condiciones soportan:
 
 - comparadores numericos sobre stats;
 - presencia o ausencia de personality traits.
+
+En `NarrativeOpportunity`, las condiciones por stats o personalidad no deben
+usarse para ocultar opciones. El estado solo participa en la resolucion del
+outcome posterior.
 
 ---
 

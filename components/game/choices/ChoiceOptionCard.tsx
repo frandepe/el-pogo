@@ -1,7 +1,7 @@
 import type { OptionRarity } from "@/game/types";
 
 type ChoiceOptionCardProps = {
-  badge: string;
+  badge?: string;
   description: string;
   disabledReason?: string;
   isSelected: boolean;
@@ -93,9 +93,11 @@ export function ChoiceOptionCard({
         </span>
       </span>
 
-      <span className="relative mt-6 w-fit rounded-md border border-primary/20 bg-primary/[0.08] px-3 py-1.5 text-sm font-medium text-primary">
-        {badge}
-      </span>
+      {badge ? (
+        <span className="relative mt-6 w-fit rounded-md border border-primary/20 bg-primary/[0.08] px-3 py-1.5 text-sm font-medium text-primary">
+          {badge}
+        </span>
+      ) : null}
       {disabledReason ? (
         <span className="relative mt-2 w-fit rounded-md border border-white/10 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground">
           {disabledReason}

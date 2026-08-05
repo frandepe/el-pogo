@@ -1,9 +1,14 @@
 "use client";
 
 import { create } from "zustand";
+import { createDebugChapter2GameState } from "./createDebugChapter2GameState";
 import { createInitialGameState } from "./createInitialGameState";
 import { gameEngine, type StartCareerInput } from "./gameEngine";
 import type { InterviewDefinition } from "./interviews";
+import type {
+  NarrativeOpportunityDefinition,
+  NarrativeOpportunityResolution,
+} from "./narrativeOpportunity";
 import type {
   ProductionEventDefinition,
   ProductionOption,
@@ -31,13 +36,20 @@ type GameStore = {
     production: ProductionEventDefinition,
     outcome: ProductionOutcome,
   ) => void;
+  chooseNarrativeOpportunityOption: (
+    opportunity: NarrativeOpportunityDefinition,
+    variantId: string,
+    optionId: string,
+  ) => NarrativeOpportunityResolution | undefined;
   buyShopItem: (itemId: string) => void;
   purchaseShopItem: (itemId: string) => void;
   receiveFirstCachet: () => void;
   applyTimePasses: (timePasses: TimePasses) => void;
+  startChapter2: () => void;
   advanceStep: () => void;
   finishCareer: () => void;
   resetCareer: () => void;
+  setDebugChapter2GameState: () => void;
   setDebugCurrentStep: (currentStep: number) => void;
 };
 
@@ -81,6 +93,24 @@ export const useGameStore = create<GameStore>((set) => ({
         outcome,
       ),
     })),
+  chooseNarrativeOpportunityOption: (opportunity, variantId, optionId) => {
+    let resolution: NarrativeOpportunityResolution | undefined;
+
+    set((state) => {
+      resolution = gameEngine.chooseNarrativeOpportunityOption(
+        state.gameState,
+        opportunity,
+        variantId,
+        optionId,
+      );
+
+      return {
+        gameState: resolution.gameState,
+      };
+    });
+
+    return resolution;
+  },
   buyShopItem: (itemId) =>
     set((state) => ({
       gameState: gameEngine.buyShopItem(state.gameState, itemId),
@@ -97,6 +127,10 @@ export const useGameStore = create<GameStore>((set) => ({
     set((state) => ({
       gameState: gameEngine.applyTimePasses(state.gameState, timePasses),
     })),
+  startChapter2: () =>
+    set((state) => ({
+      gameState: gameEngine.startChapter2(state.gameState),
+    })),
   advanceStep: () =>
     set((state) => ({
       gameState: gameEngine.advanceStep(state.gameState),
@@ -108,6 +142,10 @@ export const useGameStore = create<GameStore>((set) => ({
   resetCareer: () =>
     set(() => ({
       gameState: createInitialGameState(),
+    })),
+  setDebugChapter2GameState: () =>
+    set((state) => ({
+      gameState: createDebugChapter2GameState(state.gameState),
     })),
   setDebugCurrentStep: (currentStep) =>
     set((state) => ({
